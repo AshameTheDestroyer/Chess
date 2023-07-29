@@ -1,0 +1,89 @@
+@use "../../index.scss";
+
+.navigation-bar {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 100vw;
+
+    background-color: var(--background-darker-colour);
+
+    display: flex;
+    flex-direction: column;
+
+    padding-top: 9.6rem;
+
+    overflow: hidden;
+
+    transition: left 500ms;
+
+    z-index: 1;
+
+    &.open {
+        left: 0vw;
+    }
+
+    a {
+        $padding: 1.5rem;
+
+        text-decoration: none;
+        text-align: center;
+
+        width: calc(100% - $padding * 2);
+
+        padding: calc($padding * 2) $padding;
+
+        transition: background-color 250ms, transform 500ms;
+
+        &:not(:last-child) {
+            border-bottom: solid 0.2rem var(--background-colour);
+        }
+
+        &:is(:hover, :focus-within) {
+            transform: scale(1.05);
+
+            background-color: var(--background-colour);
+        }
+    }
+}
+
+@media (min-width: index.$second-screen-width) {
+
+    .navigation-bar {
+
+        &.open {
+            left: 50vw;
+        }
+    }
+}
+
+@media (min-width: index.$first-screen-width) {
+
+    .navigation-bar {
+        position: static;
+
+        width: 100%;
+
+        flex-direction: row;
+        place-content: space-evenly;
+        place-items: space-evenly;
+
+        padding-top: 0;
+
+        background: transparent;
+
+        a {
+            width: min-content;
+
+            padding: 1rem;
+
+            border-bottom: none !important;
+            border-radius: 1.5rem;
+
+            &:is(:hover, :focus-within) {
+                background-color: var(--background-darker-colour);
+            }
+        }
+    }
+}

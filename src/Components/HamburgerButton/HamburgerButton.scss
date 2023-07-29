@@ -1,0 +1,67 @@
+.hamburger-button {
+    $size: 3.5rem;
+
+    position: relative;
+
+    width: $size;
+    height: $size;
+
+    place-self: center end;
+
+    transition: transform 500ms;
+
+    z-index: 2;
+
+    &>div {
+        $gap: 0.85rem;
+        $height: calc((100% - $gap) / 3);
+
+        position: absolute;
+
+        width: 100%;
+        height: $height;
+
+        background-color: var(--fore-colour);
+
+        border-radius: 1rem;
+
+        transition: top 500ms, transform 500ms;
+
+        &:nth-child(1) {
+            top: 0;
+        }
+
+        &:nth-child(2) {
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        &:nth-child(3) {
+            top: calc(100% - $height);
+        }
+    }
+
+    &:is(:hover, :focus-within) {
+        transform: scale(1.05);
+    }
+
+    &.active {
+
+        &>div {
+
+            &:nth-child(1) {
+                top: 50%;
+                transform: translateY(-50%) rotate(45deg);
+            }
+
+            &:nth-child(2) {
+                transform: translateY(-50%) scale(0);
+            }
+
+            &:nth-child(3) {
+                top: 50%;
+                transform: translateY(-50%) rotate(-45deg);
+            }
+        }
+    }
+}

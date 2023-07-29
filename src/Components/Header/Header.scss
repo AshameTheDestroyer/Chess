@@ -1,0 +1,58 @@
+@use "../../index.scss";
+
+#main-header {
+    padding: 2rem;
+
+    display: grid;
+    grid-template-columns: auto 1fr;
+    place-content: center;
+    place-items: center;
+    gap: 2rem;
+
+    z-index: 3;
+
+    #logo {
+        text-decoration: none;
+
+        width: min-content;
+
+        display: flex;
+        place-content: center;
+        place-items: center;
+
+        padding: 0.2rem;
+
+        background-color: var(--background-colour);
+        border-radius: 1rem;
+
+        transition: background-color 250ms, transform 500ms;
+
+        cursor: pointer;
+
+        &:is(:hover, :focus-within) {
+            transform: scale(1.05);
+
+            background-color: var(--background-darker-colour);
+        }
+
+        img {
+            width: 5rem;
+        }
+
+        h1 {
+            position: relative;
+            left: -1rem;
+
+            pointer-events: none;
+
+            @include index.text-shadow($thickness: 0.275rem, $colour: inherit);
+        }
+    }
+}
+
+@media (min-width: index.$first-screen-width) {
+
+    .hamburger-button {
+        display: none;
+    }
+}
