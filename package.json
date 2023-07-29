@@ -1,6 +1,6 @@
 {
     "homepage": "https://ashamethedestroyer.github.io/Chess-Engine/",
-    "name": "chess",
+    "name": "chess-engine",
     "private": true,
     "version": "0.0.0",
     "type": "module",
