@@ -1,4 +1,4 @@
-import { PayloadAction, createSlice } from "@reduxjs/toolkit";
+import { createSlice } from "@reduxjs/toolkit";
 
 type MainSliceType = {
 
@@ -13,7 +13,7 @@ export const MainSlice = createSlice({
     initialState: INITIAL_STATE,
 
     reducers: {
-        SetHeaderHeight: (state: MainSliceType, action: PayloadAction<number>) => {
+        SetHeaderHeight: (state: MainSliceType) => {
             return {
                 ...state,
             };
