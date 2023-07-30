@@ -85,11 +85,13 @@ export default function Gameboard(): React.ReactElement {
         UpdateCellElement(cellElement, "ready");
     }
 
-    function UpdateCellElement(cellElement: HTMLButtonElement, cellState: CellState): void {
+    function UpdateCellElement(cellElement: HTMLButtonElement, cellState: CellState, options?: {
+        doNotToggleCell: boolean;
+    }): void {
         const cell: HTMLButtonElement = document.querySelector(`.${cellState}-cell`);
         cell?.classList.remove(`${cellState}-cell`);
 
-        if (cell == cellElement) {
+        if (!options?.doNotToggleCell && cell == cellElement) {
             Dispatch(ResetCell({ cellState }));
 
             return;
@@ -146,8 +148,8 @@ export default function Gameboard(): React.ReactElement {
                 index: number = CoordinateToIndex({ x: x1, y: CHESS_PIECE_COUNT - y1 - 1 }, CHESS_PIECE_COUNT),
                 previousCellElement: HTMLButtonElement = getCellElements()[index];
 
-            UpdateCellElement(previousCellElement, "played-from");
-            UpdateCellElement(cellElement, "played-to");
+            UpdateCellElement(previousCellElement, "played-from", { doNotToggleCell: true });
+            UpdateCellElement(cellElement, "played-to", { doNotToggleCell: true });
 
             return true;
         }
