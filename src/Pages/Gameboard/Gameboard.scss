@@ -1,9 +1,9 @@
 $gameboard-width: calc(100vmin - var(--header-height) - 2rem * 2);
 $gameboard-gap: 0.3rem;
 $piece-size: 0.75;
-$cell-states: selected, ready, played-from, played-to;
+$cell-states: played-from, played-to, selected, ready;
 $cell-states-with-circle: played-from;
-$cell-state-colours: orangered, lightseagreen, gold, gold;
+$cell-state-colours: gold, gold, orangered, lightseagreen;
 
 #gameboard-body {
     position: relative;
@@ -61,6 +61,7 @@ $cell-state-colours: orangered, lightseagreen, gold, gold;
             }
 
             @each $cell-state in $cell-states {
+
                 &.#{$cell-state}-cell {
                     @include emphasize-cell();
 
@@ -85,13 +86,20 @@ $cell-state-colours: orangered, lightseagreen, gold, gold;
 
                             border-radius: 100%;
 
-                            box-shadow: 0.25rem 0.25rem 0.75rem $cell-state-colour,
+                            box-shadow:
+                                0.25rem 0.25rem 0.75rem $cell-state-colour,
                                 -0.25rem 0.25rem 0.75rem $cell-state-colour,
                                 0.25rem -0.25rem 0.75rem $cell-state-colour,
                                 -0.25rem -0.25rem 0.75rem $cell-state-colour,
                             ;
 
                             opacity: 0.75;
+                        }
+                    }
+
+                    @else {
+                        &::before {
+                            content: none;
                         }
                     }
                 }

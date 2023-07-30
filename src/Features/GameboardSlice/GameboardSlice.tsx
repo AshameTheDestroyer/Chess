@@ -1,7 +1,7 @@
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 
-import Cell, { CellState } from "./Cell";
 import Coordinates from "./Coordinates";
+import Cell, { CellState } from "./Cell";
 import { Store } from "../../Store/Store";
 import MovePieceActionType from "./ActionTypes/MovePieceActionType";
 import DecodeFENCode, { INITIAL_GAME_FEN_CODE } from "./ChessDecoder";
@@ -66,7 +66,7 @@ export const GameboardSlice = createSlice({
                 fromCell: Cell = state.cells[x1][y1],
                 toCell: Cell = state.cells[x2][y2];
 
-            const
+            let
                 movingPieceExists: boolean = fromCell.piece != null,
                 targetPieceExists: boolean = toCell.piece != null;
 
