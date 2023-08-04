@@ -44,8 +44,8 @@ body {
     transition: color 500ms, background-color 500ms;
 
     &>#root>main {
-        min-height: calc(100vh - var(--header-height));
-        min-height: calc(100dvh - var(--header-height));
+        min-height: calc(100vh - var(--header-height) - var(--padding, 0) * 2);
+        min-height: calc(100dvh - var(--header-height) - var(--padding, 0) * 2);
     }
 }
 

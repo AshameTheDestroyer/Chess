@@ -8,6 +8,8 @@ import "./NavigationBar.scss";
 type NavigationBarProps = ChildlessComponentProps & {
     isOpen: boolean;
     anchors: Array<string>;
+
+    setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 export default function NavigationBar(props: NavigationBarProps): React.ReactElement {
@@ -23,7 +25,14 @@ export default function NavigationBar(props: NavigationBarProps): React.ReactEle
         >
             {
                 props.anchors.map((anchor, i) =>
-                    <Link key={i} to={`/${anchor}`}>{anchor}</Link>
+                    <Link
+                        key={i}
+
+                        to={`/${anchor}`}
+                        onClick={_e => props.setIsOpen(false)}
+                    >
+                        {anchor}
+                    </Link>
                 )
             }
         </nav>

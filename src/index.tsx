@@ -1,7 +1,7 @@
 import { Provider } from "react-redux";
 import ReactDOM from "react-dom/client";
-import React, { useEffect, useState } from "react";
 import { HashRouter, Route, Routes } from "react-router-dom";
+import React, { useEffect, useLayoutEffect, useState } from "react";
 
 import Home from "./Pages/Home/Home";
 import { Store } from "./Store/Store";
@@ -22,11 +22,13 @@ function Index(): React.ReactElement {
     const [headerHeight, setHeaderHeight] = useState(0);
 
     useEffect(() => {
-        setTimeout(() => setHeaderHeight(GetHeaderHeight()));
+        setTimeout(() => setHeaderHeight(GetHeaderHeight()), 0);
         window.addEventListener("resize", _ => setHeaderHeight(GetHeaderHeight()));
+
+        document.body.oncontextmenu = _e => false;
     }, []);
 
-    useEffect(() => {
+    useLayoutEffect(() => {
         document.body.style.setProperty("--header-height", `${headerHeight}px`);
     }, [headerHeight]);
 

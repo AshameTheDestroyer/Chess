@@ -1,0 +1,152 @@
+#context-menu {
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    display: grid;
+    place-content: center;
+    place-items: center;
+
+    background-color: var(--background-darker-colour);
+
+    border-radius: 1rem;
+    border: 0.2rem solid var(--background-colour);
+
+    box-shadow: -0.5rem 0.5rem 0.5rem var(--half-transparent);
+
+    overflow: hidden;
+
+    z-index: 100;
+
+    animation-name: context-menu-entrance;
+    animation-duration: 150ms;
+    animation-iteration-count: 1;
+    animation-fill-mode: forwards;
+    animation-direction: normal;
+    animation-timing-function: cubic-bezier(1, 1, 1, 1);
+
+    @keyframes context-menu-entrance {
+
+        from {
+            grid-template-columns: 0fr;
+            grid-template-rows: 0fr;
+        }
+
+        to {
+            grid-template-columns: 1fr;
+            grid-template-rows: 1fr;
+        }
+    }
+
+    @keyframes context-menu-entrance-only-columns {
+
+        from {
+            grid-template-columns: 0fr;
+        }
+
+        to {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    #context-menu-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
+
+        background-color: var(--background-colour);
+
+        overflow: hidden;
+
+        .context-menu-group {
+            display: flex;
+            flex-direction: column;
+
+            button {
+                --padding: 1.25rem;
+                --extra-padding: 4rem;
+
+                text-align: left;
+                white-space: nowrap;
+
+                display: flex;
+                place-content: space-between;
+                place-items: space-between;
+                gap: 2rem;
+
+                padding: var(--padding);
+
+                background-color: var(--background-darker-colour);
+
+                transition: background-color 250ms, transform 500ms;
+
+                &:is(:hover, :focus-within) {
+                    transform: scale(1.05);
+
+                    background-color: var(--background-colour);
+                }
+
+                &[data-opens-tab],
+                &#context-menu-previous-button {
+                    position: relative;
+
+                    padding-right: var(--extra-padding);
+
+                    &::after {
+                        content: "";
+
+                        position: absolute;
+                        top: 50%;
+                        right: calc(var(--padding) / 2);
+                        transform: translateY(-50%) rotate(270deg);
+
+                        height: 60%;
+                        aspect-ratio: 1;
+
+                        // ENHANCE: use better resolution SVG.
+                        background-image: url("../../assets/Icons/combo_box_arrow.svg");
+                        background-repeat: no-repeat;
+                        background-position: center;
+                        background-size: 100%;
+                    }
+                }
+
+                &#context-menu-previous-button {
+                    text-align: end;
+
+                    padding: var(--padding);
+                    padding-left: var(--extra-padding);
+
+                    &::after {
+                        right: auto;
+                        left: calc(var(--padding) / 2);
+                        transform: translateY(-50%) rotate(90deg);
+                    }
+                }
+
+                &.context-menu-icon-button {
+                    position: relative;
+
+                    padding-left: var(--extra-padding);
+
+                    &::before {
+                        content: "";
+
+                        position: absolute;
+                        top: 50%;
+                        left: calc(var(--padding) / 2);
+                        transform: translateY(-50%);
+
+                        height: 60%;
+                        aspect-ratio: 1;
+
+                        background-image: var(--icon-url);
+                        background-repeat: no-repeat;
+                        background-position: center;
+                        background-size: 100%;
+                    }
+                }
+            }
+        }
+    }
+}

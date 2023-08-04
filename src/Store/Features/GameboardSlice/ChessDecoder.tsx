@@ -1,9 +1,9 @@
-import Cell from "./Cell";
-import ColouredPiece, { Piece, PieceColour } from "./Piece";
+import Cell from "../../../Types/Cell";
 import { CHESS_PIECE_COUNT } from "./GameboardSlice";
-import Coordinates, { IndexToCoordinates, RegularIndexToBoardIndex } from "./Coordinates";
+import ColouredPiece, { Piece, PieceColour } from "../../../Types/Piece";
+import Coordinates, { IndexToCoordinates, RegularIndexToBoardIndex } from "../../../Utilities/Types/Coordinates";
 
-//* FEN stands for Forsyth-Edwards Notation; a way to represent chess game via a string.
+// INFO: FEN stands for Forsyth-Edwards Notation; a way to represent chess game via a string.
 export const INITIAL_GAME_FEN_CODE: string = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
 
 const CHESS_PIECE_MAP = new Map<string, `${PieceColour}_${Piece}`>([

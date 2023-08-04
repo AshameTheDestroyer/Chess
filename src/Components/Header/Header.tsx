@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 
+import NavigationBar from "../NavigationBar/NavigationBar";
 import HamburgerButton from "../HamburgerButton/HamburgerButton";
-import NavigationBar from "../../Components/NavigationBar/NavigationBar";
 
 import "./Header.scss";
 
@@ -22,6 +22,8 @@ export default function Header(): React.ReactElement {
                     "Puzzles",
                     "Learn",
                 ]}
+
+                setIsOpen={setIsNavigationBarOpen}
             />
 
             <HamburgerButton

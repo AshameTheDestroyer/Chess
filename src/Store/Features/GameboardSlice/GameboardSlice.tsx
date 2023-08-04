@@ -1,16 +1,15 @@
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 
-import Coordinates from "./Coordinates";
-import Cell, { CellState } from "./Cell";
-import { Store } from "../../Store/Store";
+import { Store } from "../../Store";
+import Cell from "../../../Types/Cell";
+import Coordinates from "../../../Utilities/Types/Coordinates";
+import SetUpGameActionType from "./ActionTypes/SetUpGameActionType";
 import MovePieceActionType from "./ActionTypes/MovePieceActionType";
 import DecodeFENCode, { INITIAL_GAME_FEN_CODE } from "./ChessDecoder";
+import AlterCellStateActionType from "./ActionTypes/AlterCellStateActionType";
+import { AddCellState, DoCellStatesIntersect, IsCellStateSingular, RemoveCellState } from "../../../Types/CellState";
 
 type GameboardSliceType = {
-    readyCell?: Cell;
-    selectedCell?: Cell;
-    playedToCell?: Cell;
-    playedFromCell?: Cell;
     pieceCells?: Array<Cell>;
     cells: Array<Array<Cell>>;
 };
@@ -37,24 +36,43 @@ export const GameboardSlice = createSlice({
                 state.cells[pieceCell.x][pieceCell.y].piece = pieceCell.piece);
         },
 
-        UpdateCell: (state: GameboardSliceType, action: PayloadAction<{ coordinates: Coordinates, cellState: CellState }>): void => {
-            const { x, y } = action.payload.coordinates;
+        ResetGameboard: (state: GameboardSliceType): void => {
+            state.cells = new Array(CHESS_PIECE_COUNT)
+                .fill([]).map((_array, i) => new Array(CHESS_PIECE_COUNT)
+                    .fill(null).map<Cell>((_cell, j) => {
+                        return { x: i, y: j };
+                    })
+                );
 
-            switch (action.payload.cellState) {
-                case "selected": state.selectedCell = state.cells[x][y]; break;
-                case "ready": state.readyCell = state.cells[x][y]; break;
-                case "played-from": state.playedFromCell = state.cells[x][y]; break;
-                case "played-to": state.playedToCell = state.cells[x][y]; break;
-            }
+            state.pieceCells = null;
         },
 
-        ResetCell: (state: GameboardSliceType, action: PayloadAction<{ cellState: CellState }>): void => {
-            switch (action.payload.cellState) {
-                case "selected": delete state.selectedCell; break;
-                case "ready": delete state.readyCell; break;
-                case "played-from": delete state.playedFromCell; break;
-                case "played-to": delete state.playedToCell; break;
+        SetUpGame: (state: GameboardSliceType, action: PayloadAction<SetUpGameActionType>): void => {
+            state.pieceCells = DecodeFENCode(action.payload.FENCode);
+            state.pieceCells.forEach(pieceCell =>
+                state.cells[pieceCell.x][pieceCell.y].piece = pieceCell.piece);
+        },
+
+        AddStateToCell: (state: GameboardSliceType, action: PayloadAction<AlterCellStateActionType>): void => {
+            const { x, y } = action.payload;
+            state.cells[x][y].state = AddCellState(state.cells[x][y].state, action.payload.cellState);
+        },
+
+        RemoveStateFromCell: (state: GameboardSliceType, action: PayloadAction<AlterCellStateActionType>): void => {
+            const { x, y } = action.payload;
+            state.cells[x][y].state = RemoveCellState(state.cells[x][y].state, action.payload.cellState);
+        },
+
+        RemoveStateFromSingularCell: (state: GameboardSliceType, action: PayloadAction<Omit<AlterCellStateActionType, "x" | "y">>): void => {
+            if (!IsCellStateSingular(action.payload.cellState)) {
+                throw new EvalError(`The Cell State "${action.payload.cellState}" is not a Singular Cell State`);
             }
+
+            const cell: Cell = state.cells.flat().find(cell => DoCellStatesIntersect(cell.state, action.payload.cellState));
+
+            if (cell == null) { return; }
+
+            cell.state = RemoveCellState(cell.state, action.payload.cellState);
         },
 
         MovePiece: (state: GameboardSliceType, action: PayloadAction<MovePieceActionType>): void => {
@@ -96,8 +114,10 @@ export const SelectGameboardSlice = (state: typeof Store): GameboardSliceType =>
 export const GameboardSliceReducer = GameboardSlice.reducer;
 
 export const {
-    ResetCell,
     MovePiece,
-    UpdateCell,
+    AddStateToCell,
+    ResetGameboard,
     SetUpInitialGame,
+    RemoveStateFromCell,
+    RemoveStateFromSingularCell,
 } = GameboardSlice.actions;

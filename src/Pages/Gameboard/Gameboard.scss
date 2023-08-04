@@ -1,12 +1,20 @@
+@use "../../index.scss";
+
 $gameboard-width: calc(100vmin - var(--header-height) - 2rem * 2);
 $gameboard-gap: 0.3rem;
+
 $piece-size: 0.75;
-$cell-states: played-from, played-to, selected, ready;
-$cell-states-with-circle: played-from;
+
+$cell-states: playedFrom, playedTo, selected, ready;
+$cell-states-with-circle: playedFrom;
 $cell-state-colours: gold, gold, orangered, lightseagreen;
 
 #gameboard-body {
+    --padding: 2rem;
+
     position: relative;
+
+    padding: var(--padding);
 
     #gameboard {
         position: absolute;
@@ -73,33 +81,34 @@ $cell-state-colours: gold, gold, orangered, lightseagreen;
                         -0.25rem -0.25rem 0.75rem $cell-state-colour,
                     ;
 
-                    @if (index($list: $cell-states-with-circle, $value: $cell-state)) {
-                        position: relative;
+                    position: relative;
 
-                        &::before {
-                            content: "";
+                    &::before {
+                        content: "";
 
-                            position: absolute;
-                            inset: 35%;
+                        position: absolute;
+                        inset: 35%;
 
-                            background-color: $cell-state-colour;
+                        background-color: $cell-state-colour;
 
-                            border-radius: 100%;
+                        border-radius: 100%;
 
-                            box-shadow:
-                                0.25rem 0.25rem 0.75rem $cell-state-colour,
-                                -0.25rem 0.25rem 0.75rem $cell-state-colour,
-                                0.25rem -0.25rem 0.75rem $cell-state-colour,
-                                -0.25rem -0.25rem 0.75rem $cell-state-colour,
-                            ;
+                        box-shadow:
+                            0.25rem 0.25rem 0.75rem $cell-state-colour,
+                            -0.25rem 0.25rem 0.75rem $cell-state-colour,
+                            0.25rem -0.25rem 0.75rem $cell-state-colour,
+                            -0.25rem -0.25rem 0.75rem $cell-state-colour,
+                        ;
 
-                            opacity: 0.75;
-                        }
+                        opacity: 0.75;
+
+                        transition: opacity 500ms, background-colour 500ms, box-shadow 500ms;
                     }
 
-                    @else {
+                    @if (index($list: $cell-states-with-circle, $value: $cell-state)==null) {
+
                         &::before {
-                            content: none;
+                            opacity: 0;
                         }
                     }
                 }
@@ -152,17 +161,24 @@ $cell-state-colours: gold, gold, orangered, lightseagreen;
 
 #dragged-piece {
     position: absolute;
-    top: 0;
-    left: 0;
+    top: -100%;
+    left: -100%;
+    transform: translate(-50%, -50%);
 
     width: calc(($gameboard-width - $gameboard-gap * 2) / 8 * $piece-size);
     aspect-ratio: 1;
-
-    transform: translate(-50%, -50%);
 
     filter: drop-shadow(0.35rem 0.35rem 0 black);
 
     pointer-events: none;
 
     z-index: 10;
+}
+
+@media (min-width: index.$first-screen-width) {
+
+    #gameboard {
+        left: var(--padding) !important;
+        transform: translateY(-50%) !important;
+    }
 }

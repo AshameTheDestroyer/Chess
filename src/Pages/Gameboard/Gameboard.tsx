@@ -2,11 +2,32 @@ import { createPortal } from "react-dom";
 import { useSelector, useDispatch } from "react-redux";
 import React, { useEffect, useRef, useState } from "react";
 
-import ColouredPiece from "../../Features/GameboardSlice/Piece";
-import Cell, { CellState } from "../../Features/GameboardSlice/Cell";
-import { CoordinatesToChessCoordinates } from "../../Features/GameboardSlice/ChessCoordinates";
-import Coordinates, { CoordinateToIndex, IndexToCoordinates, RegularIndexToBoardIndex } from "../../Features/GameboardSlice/Coordinates";
-import { CHESS_PIECE_COUNT, ResetCell, UpdateCell, SelectGameboardSlice, SetUpInitialGame, MovePiece } from "../../Features/GameboardSlice/GameboardSlice";
+import Cell from "../../Types/Cell";
+import ColouredPiece from "../../Types/Piece";
+import CellState, { DoCellStatesIntersect } from "../../Types/CellState";
+
+import ChessCoordinates, {
+    CoordinatesToChessCoordinates,
+} from "../../Types/ChessCoordinates";
+
+import Coordinates, {
+    CoordinateToIndex,
+    IndexToCoordinates,
+    RegularIndexToBoardIndex,
+} from "../../Utilities/Types/Coordinates";
+
+import {
+    MovePiece,
+    AddStateToCell,
+    SetUpInitialGame,
+    CHESS_PIECE_COUNT,
+    SelectGameboardSlice,
+    RemoveStateFromSingularCell,
+    ResetGameboard,
+} from "../../Store/Features/GameboardSlice/GameboardSlice";
+
+import useContextMenu from "../../Utilities/Hooks/useContextMenu";
+import ContextMenu, { ContextMenuGroupWithSelector } from "../../Components/ContextMenu/ContextMenu";
 
 import "./Gameboard.scss";
 
@@ -19,31 +40,146 @@ export default function Gameboard(): React.ReactElement {
     const [draggedPiece, setDraggedPiece] = useState<ColouredPiece>(null);
     const draggedPieceImageElementRef = useRef<HTMLImageElement>();
 
-    let cellElements_: Array<HTMLButtonElement>;
-    const getCellElements =
-        (): Array<HTMLButtonElement> => (cellElements_ ??= Array.from(document.querySelectorAll(".cell")));
+    const [
+        isContextMenuOpen,
+        contextMenuCoordinates,
+        contextMenuClickedElement,
+        setIsContextMenuOpen,
+        _setContextMenuCoordinates,
+        _setContextMenuClickedElement,
+    ] = useContextMenu();
+
+    const groups: Array<ContextMenuGroupWithSelector> = [{
+        options: [{
+            name: "Restart",
+            keyShortcut: "Ctrl+R",
+            selector: "#gameboard",
+            iconURL: PIECE_IMAGES.black_king,
+            onClick: _e => { console.log("Game's Restarted."); },
+        }, {
+            name: "Capture",
+            selector: ".cell-with-piece",
+            iconURL: PIECE_IMAGES.white_queen,
+            onClick: _e => { console.log("Piece's Capture."); },
+            condition: GameboardSlice.cells.flat().find(cell => DoCellStatesIntersect(cell.state, CellState.ready)) != null
+        }, {
+            name: "Do",
+            opensTab: "do-tab",
+        }],
+    }, {
+        options: [{
+            name: "LOL",
+            opensTab: "lol-tab",
+        }],
+    }, {
+        tabName: "do-tab",
+        options: [{
+            name: "Information",
+            opensTab: "information-tab",
+        }, {
+            name: "Undo",
+            keyShortcut: "Ctrl+Z",
+            onClick: _e => { console.log("Game's Undone."); },
+        }, {
+            name: "Redo",
+            keyShortcut: "Ctrl+Y",
+            onClick: _e => { console.log("Game's Redone."); },
+        }],
+    }, {
+        tabName: "information-tab",
+        options: [{
+            name: "Furthermore",
+            opensTab: "furthermore-tab",
+            iconURL: PIECE_IMAGES.black_knight,
+        }],
+    }, {
+        tabName: "furthermore-tab",
+        options: [{
+            name: "Good",
+            iconURL: PIECE_IMAGES.black_pawn,
+            onClick: _e => { console.log("Gooooooooood."); },
+        }],
+    }, {
+        tabName: "furthermore-tab",
+        options: [{
+            name: "Bad",
+            iconURL: PIECE_IMAGES.white_pawn,
+            onClick: _e => { console.log("Baaaaaaaaad."); },
+        }],
+    }, {
+        tabName: "lol-tab",
+        options: [{
+            name: "LOL",
+            onClick: _e => { console.log("LOOOOOOOOOOOL."); },
+        }],
+    }];
 
     useEffect(() => {
         Dispatch(SetUpInitialGame());
+
+        return () => { Dispatch(ResetGameboard()); };
     }, []);
+
+    return (
+        <main id="gameboard-body">
+            <GameboardElement
+                draggedPiece={draggedPiece}
+                setDraggedPiece={setDraggedPiece}
+                setIsContextMenuOpen={setIsContextMenuOpen}
+                draggedPieceImageElementRef={draggedPieceImageElementRef}
+            />
+
+            <DraggedPieceElement
+                draggedPiece={draggedPiece}
+                draggedPieceImageElementRef={draggedPieceImageElementRef}
+            />
+
+            <ContextMenu
+                groups={groups}
+                isOpen={isContextMenuOpen}
+                {...contextMenuCoordinates}
+                clickedElement={contextMenuClickedElement}
+
+                setIsOpen={setIsContextMenuOpen}
+            />
+        </main>
+    );
+}
+
+type GameboardElementProps = {
+    draggedPiece: ColouredPiece;
+    draggedPieceImageElementRef: React.MutableRefObject<HTMLImageElement>;
+
+    setIsContextMenuOpen: React.Dispatch<React.SetStateAction<boolean>>;
+    setDraggedPiece: React.Dispatch<React.SetStateAction<ColouredPiece>>;
+};
+
+function GameboardElement(props: GameboardElementProps): React.ReactElement {
+    const GameboardSlice = useSelector(SelectGameboardSlice);
+    const Dispatch = useDispatch();
+
+    let cellElements_: Array<HTMLButtonElement>;
+    const getCellElements =
+        (): Array<HTMLButtonElement> => (cellElements_ ??= Array.from(document.querySelectorAll(".cell")));
 
     function OnGameboardKeyDown(e: React.KeyboardEvent<HTMLElement>): void {
         const cellElement: HTMLButtonElement = (e.target as HTMLButtonElement).closest(".cell");
         if (cellElement == null) { return; }
 
-        if (draggedPiece != null) { ResetDragging(); }
+        if (props.draggedPiece != null) { ResetDragging(); }
 
         let cellHasBeenClicked: boolean = [" ", "Enter"].includes(e.key);
+        if (cellHasBeenClicked) { return; }
 
-        if (cellHasBeenClicked) {
-            let pieceHasMoved: boolean = EvaluatePieceMovement(cellElement);
+        RemoveStateFromSingularCellElement(CellState.selected);
 
-            if (pieceHasMoved) { e.preventDefault(); return; }
-        }
+        const
+            originalIndex: number = Number(cellElement.dataset["originalIndex"]),
+            nextCellElement: HTMLButtonElement = getCellElements()[CalculateMovingIndex(originalIndex, e)];
 
-        const originalIndex: number = Number(cellElement.dataset["originalIndex"]);
+        nextCellElement.focus();
 
-        UpdateCellElement(getCellElements()[CalculateMovingIndex(originalIndex, e)], "selected");
+        AddStateToCellElement(nextCellElement, CellState.selected);
     }
 
     function CalculateMovingIndex(index: number, e: React.KeyboardEvent<HTMLElement>): number {
@@ -75,52 +211,40 @@ export default function Gameboard(): React.ReactElement {
         const cellElement: HTMLButtonElement = (e.target as HTMLButtonElement).closest(".cell");
         if (cellElement == null) { return; }
 
-        if (draggedPiece != null) { ResetDragging(); }
+        if (props.draggedPiece != null) { ResetDragging(); }
 
-        let pieceHasMoved: boolean = EvaluatePieceMovement(cellElement);
+        let pieceHasMoved: boolean = EvaluatePieceMovement(cellElement),
+            cellWasReady: boolean = cellElement.classList.contains("ready-cell"),
+            cellWasSelected: boolean = cellElement.classList.contains("selected-cell");
 
-        if (pieceHasMoved) { return; }
+        RemoveStateFromSingularCellElement(CellState.ready);
+        RemoveStateFromSingularCellElement(CellState.selected);
 
-        UpdateCellElement(cellElement, "selected");
-        UpdateCellElement(cellElement, "ready");
+        if (pieceHasMoved || (cellWasSelected && cellWasReady)) { return; }
+
+        AddStateToCellElement(cellElement, CellState.selected);
+        AddStateToCellElement(cellElement, CellState.ready);
     }
 
-    function UpdateCellElement(cellElement: HTMLButtonElement, cellState: CellState, options?: {
-        doNotToggleCell: boolean;
-    }): void {
-        const cell: HTMLButtonElement = document.querySelector(`.${cellState}-cell`);
-        cell?.classList.remove(`${cellState}-cell`);
-
-        if (!options?.doNotToggleCell && cell == cellElement) {
-            Dispatch(ResetCell({ cellState }));
-
-            return;
-        }
-
-        cellElement.classList.add(`${cellState}-cell`);
-        cellElement.focus();
-
-        const coordinates: Coordinates = IndexToCoordinates(
-            Number(cellElement.dataset["index"]), CHESS_PIECE_COUNT);
-
-        Dispatch(UpdateCell({ coordinates, cellState: cellState }));
+    function AddStateToCellElement(cellElement: HTMLButtonElement, cellState: CellState): void {
+        const coordinates: Coordinates = IndexToCoordinates(Number(cellElement.dataset["index"]), CHESS_PIECE_COUNT);
+        Dispatch(AddStateToCell({ ...coordinates, cellState }));
     }
 
-    function ResetCellElement(cellState: CellState): void {
-        const selectedCell: HTMLButtonElement = document.querySelector(`.${cellState}-cell`);
-        selectedCell?.classList.remove(`${cellState}-cell`);
-
-        Dispatch(ResetCell({ cellState }));
+    function RemoveStateFromSingularCellElement(cellState: CellState): void {
+        Dispatch(RemoveStateFromSingularCell({ cellState }));
     }
 
-    function EvaluatePieceMovement(cellElement: HTMLButtonElement, fallbackOptions?: {
+    function EvaluatePieceMovement(cellElement: HTMLButtonElement, predefinedOptions?: {
         toCell: Cell,
         fromCell: Cell,
     }): boolean {
-        if (GameboardSlice.readyCell == null && fallbackOptions?.fromCell == null) { return false; }
+        const readyCell: Cell = GameboardSlice.cells.flat().find(cell => DoCellStatesIntersect(cell.state, CellState.ready));
+
+        if (readyCell == null && predefinedOptions?.fromCell == null) { return false; }
 
         const
-            { x: x1, y: y1 }: Coordinates = { ...(fallbackOptions?.fromCell ?? GameboardSlice.readyCell) },
+            { x: x1, y: y1 }: Coordinates = { ...(predefinedOptions?.fromCell ?? readyCell) },
             { x: x2, y: y2 }: Coordinates = IndexToCoordinates(Number(cellElement.dataset["index"]), CHESS_PIECE_COUNT);
 
         const
@@ -128,8 +252,8 @@ export default function Gameboard(): React.ReactElement {
             toCell: Cell = GameboardSlice.cells[x2][y2];
 
         const
-            movingPiece: ColouredPiece = fallbackOptions?.fromCell?.piece ?? fromCell?.piece,
-            targetPiece: ColouredPiece = fallbackOptions?.toCell?.piece ?? toCell?.piece;
+            movingPiece: ColouredPiece = predefinedOptions?.fromCell?.piece ?? fromCell?.piece,
+            targetPiece: ColouredPiece = predefinedOptions?.toCell?.piece ?? toCell?.piece;
 
         let movingPieceExists: boolean = movingPiece != null,
             targetPieceExists: boolean = targetPiece != null,
@@ -141,15 +265,17 @@ export default function Gameboard(): React.ReactElement {
                 to: { x: x2, y: y2 },
             }));
 
-            ResetCellElement("selected");
-            ResetCellElement("ready");
+            RemoveStateFromSingularCellElement(CellState.selected);
+            RemoveStateFromSingularCellElement(CellState.ready);
+            RemoveStateFromSingularCellElement(CellState.playedTo);
+            RemoveStateFromSingularCellElement(CellState.playedFrom);
 
             const
                 index: number = CoordinateToIndex({ x: x1, y: CHESS_PIECE_COUNT - y1 - 1 }, CHESS_PIECE_COUNT),
                 previousCellElement: HTMLButtonElement = getCellElements()[index];
 
-            UpdateCellElement(previousCellElement, "played-from", { doNotToggleCell: true });
-            UpdateCellElement(cellElement, "played-to", { doNotToggleCell: true });
+            AddStateToCellElement(previousCellElement, CellState.playedFrom);
+            AddStateToCellElement(cellElement, CellState.playedTo);
 
             return true;
         }
@@ -162,16 +288,13 @@ export default function Gameboard(): React.ReactElement {
         if (cellElement == null) { return; }
 
         e.preventDefault();
-
-        UpdateCellElement(cellElement, "selected");
-        UpdateCellElement(cellElement, "ready");
+        props.setIsContextMenuOpen(false);
 
         cellElement.classList.add("dragged-cell");
 
-        const { x, y }: Coordinates = IndexToCoordinates(
-            Number(cellElement.dataset["index"]), CHESS_PIECE_COUNT);
+        const { x, y }: Coordinates = IndexToCoordinates(Number(cellElement.dataset["index"]), CHESS_PIECE_COUNT);
 
-        setDraggedPiece(GameboardSlice.cells[x][y].piece);
+        props.setDraggedPiece(GameboardSlice.cells[x][y].piece);
 
         document.onmousemove = OnDocumentMouseMove;
         document.onmouseup = OnDocumentMouseUp;
@@ -184,26 +307,24 @@ export default function Gameboard(): React.ReactElement {
         document.onmousemove = null;
         document.onmouseup = null;
 
-        setDraggedPiece(null);
+        props.setDraggedPiece(null);
 
-        ResetCellElement("selected");
-        ResetCellElement("ready");
+        RemoveStateFromSingularCellElement(CellState.selected);
+        RemoveStateFromSingularCellElement(CellState.ready);
     }
 
     function OnDocumentMouseMove(e: MouseEvent): void {
-        const draggedPieceImageElement: HTMLImageElement = draggedPieceImageElementRef.current;
-
         const
-            PADDING_IN_PIXEL: number = 30,
-            TOP: number = Math.min(Math.max(e.y, PADDING_IN_PIXEL), window.innerHeight - PADDING_IN_PIXEL),
-            LEFT: number = Math.min(Math.max(e.x, PADDING_IN_PIXEL), window.innerWidth - PADDING_IN_PIXEL);
+            paddingInPixels: number = 30,
+            top: number = Math.min(Math.max(e.y, paddingInPixels), window.innerHeight - paddingInPixels),
+            left: number = Math.min(Math.max(e.x, paddingInPixels), window.innerWidth - paddingInPixels);
 
-        draggedPieceImageElement.style.top = `${TOP}px`;
-        draggedPieceImageElement.style.left = `${LEFT}px`;
+        props.draggedPieceImageElementRef.current.style.top = `${top}px`;
+        props.draggedPieceImageElementRef.current.style.left = `${left}px`;
     }
 
     function OnDocumentMouseUp(e: MouseEvent): void {
-        let isDraggingPiece: boolean = draggedPieceImageElementRef.current != null;
+        let isDraggingPiece: boolean = props.draggedPieceImageElementRef.current != null;
         if (!isDraggingPiece) { return; }
 
         const cellElement: HTMLButtonElement = (e.target as HTMLButtonElement).closest(".cell");
@@ -228,34 +349,16 @@ export default function Gameboard(): React.ReactElement {
         ResetDragging();
     }
 
-    return (
-        <main id="gameboard-body">
-            <section
-                id="gameboard"
-                key="gameboard"
+    return <section
+        id="gameboard"
+        key="gameboard"
 
-                onKeyDown={OnGameboardKeyDown}
-                onDragStart={OnGameboardDragStart}
-                onClick={OnGameboardMouseDown}
-            >
-                {
-                    new Array(CHESS_PIECE_COUNT ** 2).fill(null).map((_, i) =>
-                        <CellElement key={i} index={i} />)
-                }
-            </section>
-            {
-                draggedPiece != null &&
-                createPortal(
-                    <img
-                        id="dragged-piece"
-                        ref={draggedPieceImageElementRef}
-
-                        alt={`${draggedPiece}_icon`}
-                        src={PIECE_IMAGES[`${draggedPiece.colour}_${draggedPiece.piece}`]}
-                    />, document.body)
-            }
-        </main>
-    );
+        onClick={OnGameboardMouseDown}
+        onKeyDown={OnGameboardKeyDown}
+        onDragStart={OnGameboardDragStart}
+    >
+        {new Array(CHESS_PIECE_COUNT ** 2).fill(null).map((_, i) => <CellElement key={i} index={i} />)}
+    </section>;
 }
 
 type CellProps = {
@@ -267,29 +370,55 @@ function CellElement(props: CellProps): React.ReactElement {
 
     const
         index: number = RegularIndexToBoardIndex(props.index, CHESS_PIECE_COUNT),
-        coordinates: Coordinates = IndexToCoordinates(index, CHESS_PIECE_COUNT),
-        { number, character } = CoordinatesToChessCoordinates(coordinates);
-
-    const colouredPiece: ColouredPiece = GameboardSlice.cells[coordinates.x][coordinates.y].piece;
+        { x, y }: Coordinates = IndexToCoordinates(index, CHESS_PIECE_COUNT),
+        { number, character }: ChessCoordinates = CoordinatesToChessCoordinates({ x, y }),
+        cell: Cell = GameboardSlice.cells[x][y],
+        piece: ColouredPiece = cell.piece;
 
     return (
         <button
-            className="cell"
+            className={[
+                "cell",
+                piece != null && "cell-with-piece",
+
+                ...Object.entries(CellState)
+                    .filter(([key, _value]) => isNaN(Number(key)))
+                    .map<[string, number]>(([key, value]) => [key, Number(value)])
+                    .filter(([_key, value]) => DoCellStatesIntersect(cell.state, value))
+                    .map(([key, _value]) => `${key}-cell`)
+            ].toClassName()}
 
             tabIndex={-1}
             data-index={index}
             data-number={number}
             data-character={character}
+            data-coordinates={`${x},${y}`}
             data-original-index={props.index}
-            data-coordinates={Object.values(coordinates)}
         >
             {
-                colouredPiece != null &&
+                piece != null &&
                 <img
-                    alt={`${colouredPiece}_icon`}
-                    src={PIECE_IMAGES[`${colouredPiece.colour}_${colouredPiece.piece}`]}
+                    alt={`${piece.colour}_${piece.piece}_icon`}
+                    src={PIECE_IMAGES[`${piece.colour}_${piece.piece}`]}
                 />
             }
         </button>
     );
+}
+
+type DraggedPieceElementProps = {
+    draggedPiece: ColouredPiece;
+    draggedPieceImageElementRef: React.MutableRefObject<HTMLImageElement>;
+};
+
+function DraggedPieceElement(props: DraggedPieceElementProps): React.ReactNode {
+    return props.draggedPiece != null &&
+        createPortal(
+            <img
+                id="dragged-piece"
+                ref={props.draggedPieceImageElementRef}
+
+                alt={`${props.draggedPiece.colour}_${props.draggedPiece.piece}_icon`}
+                src={PIECE_IMAGES[`${props.draggedPiece.colour}_${props.draggedPiece.piece}`]} />
+            , document.body);
 }

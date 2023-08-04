@@ -1,4 +1,4 @@
-import Coordinates from "./Coordinates";
+import Coordinates from "../Utilities/Types/Coordinates";
 
 type ChessCoordinates = {
     number: number;
