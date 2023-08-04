@@ -33,7 +33,7 @@ function Index(): React.ReactElement {
     }, [headerHeight]);
 
     return (
-        <HashRouter basename={window.location.pathname || ""}>
+        <HashRouter basename={process.env.PUBLIC_URL || ""}>
             <Header />
             <Provider store={Store}>
                 <Routes>
