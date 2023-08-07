@@ -23,3 +23,16 @@ Today we're not making any tedious Chess Game, no baby today we're making A WHOL
    * Conditioned Buttons: buttons that a certain condition must be met before the buttons appear.
 2. Cell states are now grouped in an Enum in a better way for future development, with nice API to deal with.
 3. Minor bug fixes.
+
+### Home Page:
+1. This one was simple, I created a basic homepage, with some Context Menu bug fixes, and then throwed a bunch of SASS on it.
+2. I've made a Custom Button component, as well as a Custom Button Displayer, and I've given them a poppy cartoony-ish style, which in my opinion, looks amazing.
+3. Custom Buttons implement:
+   * Normal: boring.
+   * Emphasized: which means the button will stand out with the primary colour of the page.
+   * Arrowed: which gives the button a pointing arrow, either to left or right.
+   * Iconified: which's the same as the aforementioned, but with a custom icon.
+   * Linking: which allows the button to act as an anchor element.
+ 4. Custom Button Displayer is just a wrapper that allows for the following displays:
+    * Flexified: displays buttons in Flex Mode.
+    * Gridding: displays buttons in Grid Mode.
