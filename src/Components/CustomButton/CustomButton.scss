@@ -1,0 +1,126 @@
+.custom-button {
+    $padding: 1rem;
+    $icon-padding-ratio: 0.7;
+    $size: calc(1ch + $padding * 2);
+    --background-colour: hsl(0, 0%, 6%);
+    --background-darker-colour: hsl(0, 0%, 0%);
+    --thickness: 0.5em;
+    --icon-url: url("");
+
+    position: relative;
+
+    min-width: $size;
+    min-height: $size;
+
+    padding: $padding;
+
+    background-color: var(--background-colour);
+
+    border-radius: 1.25rem;
+    border: 0.25rem solid var(--background-darker-colour);
+
+    box-shadow: 0 var(--thickness) 0 var(--background-darker-colour);
+
+    transition: transform 200ms, border 200ms, box-shadow 200ms;
+
+    overflow: hidden;
+
+    &:active {
+        transform: translateY(var(--thickness));
+
+        box-shadow: 0 0 0 var(--background-darker-colour);
+    }
+
+    &:hover::before {
+        content: "";
+
+        position: absolute;
+        top: 50%;
+        left: 50%;
+
+        width: 150%;
+        aspect-ratio: 7;
+
+        background-color: white;
+
+        animation-name: custom-button-pseudo-element-slide;
+        animation-duration: 500ms;
+        animation-iteration-count: 1;
+        animation-fill-mode: forwards;
+        animation-direction: normal;
+        animation-timing-function: cubic-bezier(1, 1, 1, 1);
+
+        @keyframes custom-button-pseudo-element-slide {
+
+            from {
+                transform: translate(-110%, -200%) rotate(-45deg);
+            }
+
+            to {
+                transform: translate(10%, 200%) rotate(-45deg);
+            }
+        }
+    }
+
+    &::after {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+
+        height: calc(100% - $padding * $icon-padding-ratio * 2);
+        aspect-ratio: 1;
+
+        background-image: var(--icon-url);
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: 100%;
+    }
+
+    &:focus-within:not(:active) {
+        --background-darker-colour: var(--fore-colour);
+    }
+
+    &-emphasized {
+        --background-colour: var(--main-colour);
+        --background-darker-colour: hsl(var(--main-colour-raw), 20%);
+    }
+
+    &-arrowed {
+        --icon-url: url("./Icons/arrow_thin.svg") !important;
+
+        &[data-icon-place="left"]::after {
+            transform: translateY(-50%) rotate(180deg);
+        }
+    }
+
+    &-arrowed,
+    &-iconified {
+        $extra-padding: 1.5rem;
+
+        &::after {
+            content: "";
+        }
+
+        &[data-icon-place="left"] {
+            padding-left: calc($extra-padding + $padding * 2);
+
+            &::after {
+                left: calc($padding * $icon-padding-ratio);
+            }
+        }
+
+        &[data-icon-place="right"] {
+            padding-right: calc($extra-padding + $padding * 2);
+
+            &::after {
+                right: calc($padding * $icon-padding-ratio);
+            }
+        }
+    }
+
+    &>a {
+        text-decoration: none;
+
+        pointer-events: none;
+    }
+}

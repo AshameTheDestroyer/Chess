@@ -6,7 +6,6 @@ $gameboard-gap: 0.3rem;
 $piece-size: 0.75;
 
 $cell-states: playedFrom, playedTo, selected, ready;
-$cell-states-with-circle: playedFrom;
 $cell-state-colours: gold, gold, orangered, lightseagreen;
 
 #gameboard-body {
@@ -17,15 +16,15 @@ $cell-state-colours: gold, gold, orangered, lightseagreen;
     padding: var(--padding);
 
     #gameboard {
+        $padding: 2.5rem;
+
         position: absolute;
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
 
-        width: $gameboard-width;
+        width: calc($gameboard-width - $padding * 2);
         aspect-ratio: 1;
-
-        background-color: var(--background-darker-colour);
 
         display: grid;
         grid-template-columns: repeat(8, 1fr);
@@ -34,7 +33,11 @@ $cell-state-colours: gold, gold, orangered, lightseagreen;
         place-items: center;
         gap: $gameboard-gap;
 
-        padding: $gameboard-gap;
+        padding: $padding;
+
+        background-color: var(--background-darker-colour);
+
+        border: 0.2rem solid var(--fore-colour);
 
         .cell {
             position: relative;
@@ -62,6 +65,13 @@ $cell-state-colours: gold, gold, orangered, lightseagreen;
 
             @mixin emphasize-cell() {
                 transform: scale(0.9);
+
+                &::before,
+                &::after {
+                    --margin-modifier-left: calc((-0.75 * 1 / 0.9));
+                    --margin-modifier-bottom: calc((-0.9 * 1 / 0.9));
+                    --scale-modifier: calc(1 / 0.9);
+                }
             }
 
             &:is(:hover, :focus-within) {
@@ -80,69 +90,49 @@ $cell-state-colours: gold, gold, orangered, lightseagreen;
                         0.25rem -0.25rem 0.75rem $cell-state-colour,
                         -0.25rem -0.25rem 0.75rem $cell-state-colour,
                     ;
-
-                    position: relative;
-
-                    &::before {
-                        content: "";
-
-                        position: absolute;
-                        inset: 35%;
-
-                        background-color: $cell-state-colour;
-
-                        border-radius: 100%;
-
-                        box-shadow:
-                            0.25rem 0.25rem 0.75rem $cell-state-colour,
-                            -0.25rem 0.25rem 0.75rem $cell-state-colour,
-                            0.25rem -0.25rem 0.75rem $cell-state-colour,
-                            -0.25rem -0.25rem 0.75rem $cell-state-colour,
-                        ;
-
-                        opacity: 0.75;
-
-                        transition: opacity 500ms, background-colour 500ms, box-shadow 500ms;
-                    }
-
-                    @if (index($list: $cell-states-with-circle, $value: $cell-state)==null) {
-
-                        &::before {
-                            opacity: 0;
-                        }
-                    }
                 }
             }
 
             &:nth-child(8n + 1),
             &:nth-child(n + #{calc(8 * 8 - 8 + 1)}) {
+                --margin-modifier-left: -0.75;
+                --margin-modifier-bottom: -0.9;
+                --scale-modifier: 1;
 
+
+                &::before,
                 &::after {
                     font-weight: bold;
 
                     position: absolute;
-                    left: 0.5rem;
-                    bottom: 0.5rem;
 
                     display: flex;
                     flex-direction: column;
                     place-content: center;
                     place-items: center;
 
-                    color: var(--background-colour);
+                    transition: left 500ms, bottom 500ms, transform 500ms;
+                }
+
+                &::before {
+                    top: 50%;
+                    left: calc($padding * var(--margin-modifier-left));
+                    transform: translateY(-50%) scale(var(--scale-modifier));
+                }
+
+                &::after {
+                    left: 50%;
+                    bottom: calc($padding * var(--margin-modifier-bottom));
+                    transform: translateX(-50%) scale(var(--scale-modifier));
                 }
             }
 
-            &:nth-child(8n + 1)::after {
+            &:nth-child(8n + 1)::before {
                 content: attr(data-number);
             }
 
             &:nth-child(n + #{calc(8 * 8 - 8 + 1)})::after {
                 content: attr(data-character);
-            }
-
-            &:nth-child(8n + 1):nth-child(n + #{calc(8 * 8 - 8 + 1)})::after {
-                content: attr(data-number) " " attr(data-character);
             }
 
             img {

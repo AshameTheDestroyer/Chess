@@ -9,19 +9,22 @@ $second-screen-width: 520px;
 }
 
 html {
-    --header-height: 7rem;
+    --header-height: 9rem;
 
     scroll-behavior: smooth;
     scroll-padding-top: var(--header-height);
 }
 
 :root {
-    --main-colour: #00D647;
-    --background-colour: #222;
-    --background-darker-colour: #111;
-    --fore-colour: #FFF;
-    --fore-darker-colour: #999;
-    --half-transparent: #0000007C;
+    --main-colour: hsl(140, 100%, 42%);
+    --main-colour-raw: 140, 100%;
+
+    --background-colour: hsl(0, 0%, 13%);
+    --background-darker-colour: hsl(0, 0%, 7%);
+    --fore-colour: hsl(0, 0%, 100%);
+    --fore-darker-colour: hsl(0, 0%, 60%);
+    --half-transparent: hsla(0, 0%, 0%, 0.5);
+
     --best-bezier-curve: cubic-bezier(0.15, 0.95, 0.3, 1.5);
 
     --main-colour-filter: invert(40%) sepia(40%) saturate(3678%) hue-rotate(98deg) brightness(99%) contrast(105%);
@@ -44,8 +47,8 @@ body {
     transition: color 500ms, background-color 500ms;
 
     &>#root>main {
-        min-height: calc(100vh - var(--header-height) - var(--padding, 0) * 2);
-        min-height: calc(100dvh - var(--header-height) - var(--padding, 0) * 2);
+        min-height: calc(100vh - var(--header-height) - var(--padding, 0rem) * 2);
+        min-height: calc(100dvh - var(--header-height) - var(--padding, 0rem) * 2);
     }
 }
 
@@ -107,6 +110,12 @@ img {
 
 .light-themed img {
     filter: invert(1);
+}
+
+h1.big-header {
+    font-size: 5rem;
+
+    color: var(--main-colour);
 }
 
 ::-webkit-scrollbar {

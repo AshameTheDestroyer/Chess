@@ -1,0 +1,100 @@
+@use "../../index.scss";
+
+#home-page {
+    --padding: 5rem;
+
+    padding: var(--padding);
+
+    &>section {
+        min-height: inherit;
+
+        display: grid;
+        grid-template-columns: 1fr;
+        grid-template-rows: repeat(2, 1fr);
+        gap: 2rem;
+
+        &:first-child {
+            overflow: hidden;
+        }
+
+        &>div {
+            display: flex;
+            flex-direction: column;
+            place-content: start center;
+            place-items: start center;
+            gap: 2rem;
+        }
+
+        #piece-image-displayer {
+            position: relative;
+            min-height: calc(100vh - var(--header-height) - var(--padding) * 2);
+            min-height: calc(100dvh - var(--header-height) - var(--padding) * 2);
+
+            grid-row: 1;
+
+            &>figure>img {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%) scale(0);
+
+                height: calc(60% - var(--padding) * 2);
+                aspect-ratio: 1;
+
+                opacity: 0;
+
+                @for $i from 1 through 4 {
+
+                    &:nth-child(#{$i}) {
+                        animation-name: piece-image-entrance-#{$i};
+                        animation-duration: 500ms;
+                        animation-delay: calc(100ms * $i);
+                        animation-iteration-count: 1;
+                        animation-fill-mode: forwards;
+                        animation-direction: normal;
+                        animation-timing-function: var(--best-bezier-curve);
+
+                        @keyframes piece-image-entrance-#{$i} {
+
+                            from {
+                                transform: translate(-50%, -50%) scale(0.5);
+
+                                opacity: 0;
+                            }
+
+                            to {
+                                transform: translate(calc(-50% + 30% * ($i - 2) - var(--padding)), -50%) rotate(calc(10deg * ($i - 2))) scale(calc(1 + 1 * $i / 10));
+
+                                opacity: 1;
+                            }
+                        }
+                    }
+                }
+            }
+
+            &>.custom-button-displayer {
+                position: absolute;
+                bottom: var(--padding);
+
+                width: 100%;
+            }
+        }
+    }
+}
+
+@media (min-width: index.$first-screen-width) {
+
+    #home-page {
+
+        &>section {
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: 1fr;
+
+            #piece-image-displayer {
+                min-height: auto;
+
+                grid-row: auto;
+            }
+        }
+    }
+}

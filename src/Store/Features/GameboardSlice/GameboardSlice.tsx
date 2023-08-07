@@ -6,6 +6,7 @@ import Coordinates from "../../../Utilities/Types/Coordinates";
 import SetUpGameActionType from "./ActionTypes/SetUpGameActionType";
 import MovePieceActionType from "./ActionTypes/MovePieceActionType";
 import DecodeFENCode, { INITIAL_GAME_FEN_CODE } from "./ChessDecoder";
+import InitializeGameboard from "../../../Functions/GameboardInitializer";
 import AlterCellStateActionType from "./ActionTypes/AlterCellStateActionType";
 import { AddCellState, DoCellStatesIntersect, IsCellStateSingular, RemoveCellState } from "../../../Types/CellState";
 
@@ -17,12 +18,7 @@ type GameboardSliceType = {
 export const CHESS_PIECE_COUNT: number = 8;
 
 const INITIAL_STATE: GameboardSliceType = {
-    cells: new Array(CHESS_PIECE_COUNT)
-        .fill([]).map((_array, i) => new Array(CHESS_PIECE_COUNT)
-            .fill(null).map<Cell>((_cell, j) => {
-                return { x: i, y: j };
-            })
-        ),
+    cells: InitializeGameboard(),
 };
 
 export const GameboardSlice = createSlice({
@@ -37,13 +33,7 @@ export const GameboardSlice = createSlice({
         },
 
         ResetGameboard: (state: GameboardSliceType): void => {
-            state.cells = new Array(CHESS_PIECE_COUNT)
-                .fill([]).map((_array, i) => new Array(CHESS_PIECE_COUNT)
-                    .fill(null).map<Cell>((_cell, j) => {
-                        return { x: i, y: j };
-                    })
-                );
-
+            state.cells = InitializeGameboard();
             state.pieceCells = null;
         },
 

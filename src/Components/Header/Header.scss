@@ -1,13 +1,17 @@
 @use "../../index.scss";
 
 #main-header {
-    padding: 2rem;
+    $padding: 2rem;
+
+    height: calc(var(--header-height) - $padding * 2);
 
     display: grid;
     grid-template-columns: auto 1fr;
     place-content: center;
     place-items: center;
     gap: 2rem;
+
+    padding: $padding;
 
     z-index: 3;
 
@@ -45,7 +49,7 @@
 
             pointer-events: none;
 
-            @include index.text-shadow($thickness: 0.275rem, $colour: inherit);
+            @include index.text-shadow($thickness: 0.275rem, $colour: var(--background-colour));
         }
     }
 }
