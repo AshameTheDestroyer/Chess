@@ -1,5 +1,6 @@
 import Cell from "../Types/Cell";
-import { CHESS_PIECE_COUNT } from "../Store/Features/GameboardSlice/GameboardSlice";
+
+export const CHESS_PIECE_COUNT: number = 8;
 
 function InitializeGameboard(): Array<Array<Cell>> {
     return new Array(CHESS_PIECE_COUNT)

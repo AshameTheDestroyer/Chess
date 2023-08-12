@@ -4,7 +4,7 @@ import Coordinates from "../Utilities/Types/Coordinates";
 
 type Cell = {
     state?: CellState;
-    piece?: ColouredPiece;
+    colouredPiece?: ColouredPiece;
 } & Coordinates;
 
 export default Cell;

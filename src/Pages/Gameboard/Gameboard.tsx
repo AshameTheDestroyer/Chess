@@ -4,11 +4,11 @@ import React, { useEffect, useRef, useState } from "react";
 
 import Cell from "../../Types/Cell";
 import ColouredPiece from "../../Types/Piece";
-import CellState, { DoCellStatesIntersect } from "../../Types/CellState";
-
-import ChessCoordinates, {
-    CoordinatesToChessCoordinates,
-} from "../../Types/ChessCoordinates";
+import useContextMenu from "../../Utilities/Hooks/useContextMenu";
+import { CHESS_PIECE_COUNT } from "../../Functions/InitializeGameboard";
+import ChessCoordinates, { CoordinatesToChessCoordinates } from "../../Types/ChessCoordinates";
+import CellState, { DoCellStatesIntersect, GetMostImportantCellState, IsCellStateMovable } from "../../Types/CellState";
+import ContextMenu, { ContextMenuGroupWithSelector } from "../../Components/ContextMenu/ContextMenu";
 
 import Coordinates, {
     CoordinateToIndex,
@@ -19,15 +19,11 @@ import Coordinates, {
 import {
     MovePiece,
     AddStateToCell,
+    ResetGameboard,
     SetUpInitialGame,
-    CHESS_PIECE_COUNT,
     SelectGameboardSlice,
     RemoveStateFromSingularCell,
-    ResetGameboard,
 } from "../../Store/Features/GameboardSlice/GameboardSlice";
-
-import useContextMenu from "../../Utilities/Hooks/useContextMenu";
-import ContextMenu, { ContextMenuGroupWithSelector } from "../../Components/ContextMenu/ContextMenu";
 
 import "./Gameboard.scss";
 
@@ -37,7 +33,7 @@ export default function Gameboard(): React.ReactElement {
     const GameboardSlice = useSelector(SelectGameboardSlice);
     const Dispatch = useDispatch();
 
-    const [draggedPiece, setDraggedPiece] = useState<ColouredPiece>(null);
+    const [draggedCell, setDraggedCell] = useState<Cell>(null);
     const draggedPieceImageElementRef = useRef<HTMLImageElement>();
 
     const [
@@ -123,14 +119,14 @@ export default function Gameboard(): React.ReactElement {
     return (
         <main id="gameboard-body">
             <GameboardElement
-                draggedPiece={draggedPiece}
-                setDraggedPiece={setDraggedPiece}
+                draggedCell={draggedCell}
+                setDraggedCell={setDraggedCell}
                 setIsContextMenuOpen={setIsContextMenuOpen}
                 draggedPieceImageElementRef={draggedPieceImageElementRef}
             />
 
             <DraggedPieceElement
-                draggedPiece={draggedPiece}
+                draggedPiece={draggedCell?.colouredPiece}
                 draggedPieceImageElementRef={draggedPieceImageElementRef}
             />
 
@@ -147,11 +143,11 @@ export default function Gameboard(): React.ReactElement {
 }
 
 type GameboardElementProps = {
-    draggedPiece: ColouredPiece;
+    draggedCell: Cell;
     draggedPieceImageElementRef: React.MutableRefObject<HTMLImageElement>;
 
+    setDraggedCell: React.Dispatch<React.SetStateAction<Cell>>;
     setIsContextMenuOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    setDraggedPiece: React.Dispatch<React.SetStateAction<ColouredPiece>>;
 };
 
 function GameboardElement(props: GameboardElementProps): React.ReactElement {
@@ -166,7 +162,7 @@ function GameboardElement(props: GameboardElementProps): React.ReactElement {
         const cellElement: HTMLButtonElement = (e.target as HTMLButtonElement).closest(".cell");
         if (cellElement == null) { return; }
 
-        if (props.draggedPiece != null) { ResetDragging(); }
+        if (props.draggedCell != null) { ResetDragging(); }
 
         let cellHasBeenClicked: boolean = [" ", "Enter"].includes(e.key);
         if (cellHasBeenClicked) { return; }
@@ -207,11 +203,11 @@ function GameboardElement(props: GameboardElementProps): React.ReactElement {
         }
     }
 
-    function OnGameboardMouseDown(e: React.MouseEvent<HTMLElement>): void {
+    function OnGameboardClick(e: React.MouseEvent<HTMLElement>): void {
         const cellElement: HTMLButtonElement = (e.target as HTMLButtonElement).closest(".cell");
         if (cellElement == null) { return; }
 
-        if (props.draggedPiece != null) { ResetDragging(); }
+        if (props.draggedCell != null) { ResetDragging(); }
 
         let pieceHasMoved: boolean = EvaluatePieceMovement(cellElement),
             cellWasReady: boolean = cellElement.classList.contains("ready-cell"),
@@ -240,7 +236,6 @@ function GameboardElement(props: GameboardElementProps): React.ReactElement {
         fromCell: Cell,
     }): boolean {
         const readyCell: Cell = GameboardSlice.cells.flat().find(cell => DoCellStatesIntersect(cell.state, CellState.ready));
-
         if (readyCell == null && predefinedOptions?.fromCell == null) { return false; }
 
         const
@@ -248,53 +243,56 @@ function GameboardElement(props: GameboardElementProps): React.ReactElement {
             { x: x2, y: y2 }: Coordinates = IndexToCoordinates(Number(cellElement.dataset["index"]), CHESS_PIECE_COUNT);
 
         const
-            fromCell: Cell = GameboardSlice.cells[x1][y1],
-            toCell: Cell = GameboardSlice.cells[x2][y2];
+            fromCell: Cell = predefinedOptions?.fromCell ?? GameboardSlice.cells[x1][y1],
+            toCell: Cell = predefinedOptions?.toCell ?? GameboardSlice.cells[x2][y2];
 
         const
-            movingPiece: ColouredPiece = predefinedOptions?.fromCell?.piece ?? fromCell?.piece,
-            targetPiece: ColouredPiece = predefinedOptions?.toCell?.piece ?? toCell?.piece;
+            movingPiece: ColouredPiece = predefinedOptions?.fromCell?.colouredPiece ?? fromCell?.colouredPiece,
+            targetPiece: ColouredPiece = predefinedOptions?.toCell?.colouredPiece ?? toCell?.colouredPiece;
 
         let movingPieceExists: boolean = movingPiece != null,
             targetPieceExists: boolean = targetPiece != null,
-            targetPieceIsFoe: boolean = movingPiece?.colour != targetPiece?.colour;
+            targetPieceIsFoe: boolean = targetPieceExists && movingPiece?.colour != targetPiece?.colour,
+            targetCellIsMovable: boolean = IsCellStateMovable(toCell.state);
 
-        if (movingPieceExists && (!targetPieceExists || targetPieceIsFoe)) {
-            Dispatch(MovePiece({
-                from: { x: x1, y: y1 },
-                to: { x: x2, y: y2 },
-            }));
+        if (!targetCellIsMovable) { return false; }
+        if (!movingPieceExists || (targetPieceExists && !targetPieceIsFoe)) { return false; }
 
-            RemoveStateFromSingularCellElement(CellState.selected);
-            RemoveStateFromSingularCellElement(CellState.ready);
-            RemoveStateFromSingularCellElement(CellState.playedTo);
-            RemoveStateFromSingularCellElement(CellState.playedFrom);
+        Dispatch(MovePiece({
+            from: { x: x1, y: y1 },
+            to: { x: x2, y: y2 },
+        }));
 
-            const
-                index: number = CoordinateToIndex({ x: x1, y: CHESS_PIECE_COUNT - y1 - 1 }, CHESS_PIECE_COUNT),
-                previousCellElement: HTMLButtonElement = getCellElements()[index];
+        RemoveStateFromSingularCellElement(CellState.ready);
+        RemoveStateFromSingularCellElement(CellState.selected);
+        RemoveStateFromSingularCellElement(CellState.playedTo);
+        RemoveStateFromSingularCellElement(CellState.playedFrom);
 
-            AddStateToCellElement(previousCellElement, CellState.playedFrom);
-            AddStateToCellElement(cellElement, CellState.playedTo);
+        const
+            index: number = CoordinateToIndex({ x: x1, y: CHESS_PIECE_COUNT - y1 - 1 }, CHESS_PIECE_COUNT),
+            previousCellElement: HTMLButtonElement = getCellElements()[index];
 
-            return true;
-        }
+        AddStateToCellElement(previousCellElement, CellState.playedFrom);
+        AddStateToCellElement(cellElement, CellState.playedTo);
 
-        return false;
+        return true;
     }
 
     function OnGameboardDragStart(e: React.DragEvent<HTMLElement>): void {
         const cellElement: HTMLButtonElement = (e.target as HTMLButtonElement).closest(".cell");
         if (cellElement == null) { return; }
 
-        e.preventDefault();
         props.setIsContextMenuOpen(false);
 
-        cellElement.classList.add("dragged-cell");
+        RemoveStateFromSingularCellElement(CellState.ready);
+        RemoveStateFromSingularCellElement(CellState.selected);
+
+        AddStateToCellElement(cellElement, CellState.ready);
+        AddStateToCellElement(cellElement, CellState.selected);
 
         const { x, y }: Coordinates = IndexToCoordinates(Number(cellElement.dataset["index"]), CHESS_PIECE_COUNT);
 
-        props.setDraggedPiece(GameboardSlice.cells[x][y].piece);
+        props.setDraggedCell(GameboardSlice.cells[x][y]);
 
         document.onmousemove = OnDocumentMouseMove;
         document.onmouseup = OnDocumentMouseUp;
@@ -307,7 +305,7 @@ function GameboardElement(props: GameboardElementProps): React.ReactElement {
         document.onmousemove = null;
         document.onmouseup = null;
 
-        props.setDraggedPiece(null);
+        props.setDraggedCell(null);
 
         RemoveStateFromSingularCellElement(CellState.selected);
         RemoveStateFromSingularCellElement(CellState.ready);
@@ -324,45 +322,50 @@ function GameboardElement(props: GameboardElementProps): React.ReactElement {
     }
 
     function OnDocumentMouseUp(e: MouseEvent): void {
-        let isDraggingPiece: boolean = props.draggedPieceImageElementRef.current != null;
-        if (!isDraggingPiece) { return; }
-
         const cellElement: HTMLButtonElement = (e.target as HTMLButtonElement).closest(".cell");
-
-        if (cellElement == null) {
-            if (isDraggingPiece) { ResetDragging(); }
-
-            return;
-        }
-
-        const readyCellElement: HTMLButtonElement = document.querySelector(".cell.dragged-cell");
+        if (cellElement == null) { ResetDragging(); return; }
 
         const
+            readyCellElement: HTMLButtonElement = document.querySelector(".cell.dragged-cell"),
             { x: x1, y: y1 } = IndexToCoordinates(Number(readyCellElement.dataset["index"]), CHESS_PIECE_COUNT),
             { x: x2, y: y2 } = IndexToCoordinates(Number(cellElement.dataset["index"]), CHESS_PIECE_COUNT);
 
+        const cellState = GetMostImportantCellState(CellElementClassListToCellState(cellElement));
+
         EvaluatePieceMovement(cellElement, {
             fromCell: GameboardSlice.cells[x1][y1],
-            toCell: GameboardSlice.cells[x2][y2],
+            toCell: { ...GameboardSlice.cells[x2][y2], state: cellState },
         });
 
         ResetDragging();
+    }
+
+    function CellElementClassListToCellState(cellElement: HTMLButtonElement): CellState {
+        return Array.from(cellElement.classList)
+            .map<string>(className => className.toString())
+            .filter(className => className.endsWith("-cell"))
+            .map<CellState>(cellStateName => CellState[cellStateName.replace("-cell", "")])
+            .reduce((previous, current) => previous + (current ?? 0), 0);
     }
 
     return <section
         id="gameboard"
         key="gameboard"
 
-        onClick={OnGameboardMouseDown}
+        onClick={OnGameboardClick}
         onKeyDown={OnGameboardKeyDown}
         onDragStart={OnGameboardDragStart}
     >
-        {new Array(CHESS_PIECE_COUNT ** 2).fill(null).map((_, i) => <CellElement key={i} index={i} />)}
+        {
+            new Array(CHESS_PIECE_COUNT ** 2).fill(null).map((_, i) =>
+                <CellElement key={i} index={i} draggedCell={props.draggedCell} />)
+        }
     </section>;
 }
 
 type CellProps = {
     index: number;
+    draggedCell: Cell;
 }
 
 function CellElement(props: CellProps): React.ReactElement {
@@ -373,13 +376,14 @@ function CellElement(props: CellProps): React.ReactElement {
         { x, y }: Coordinates = IndexToCoordinates(index, CHESS_PIECE_COUNT),
         { number, character }: ChessCoordinates = CoordinatesToChessCoordinates({ x, y }),
         cell: Cell = GameboardSlice.cells[x][y],
-        piece: ColouredPiece = cell.piece;
+        piece: ColouredPiece = cell.colouredPiece;
 
     return (
         <button
             className={[
                 "cell",
-                piece != null && "cell-with-piece",
+                (piece != null) && "cell-with-piece",
+                (props.draggedCell?.x == x && props.draggedCell?.y == y) && "dragged-cell",
 
                 ...Object.entries(CellState)
                     .filter(([key, _value]) => isNaN(Number(key)))

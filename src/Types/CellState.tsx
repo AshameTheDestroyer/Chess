@@ -19,7 +19,17 @@ export function IsCellStateSingular(cellState: CellState): boolean {
         CellState.playedTo,
         CellState.selected,
         CellState.playedFrom,
-    ].includes(cellState);
+    ].includes(GetMostImportantCellState(cellState));
+}
+
+export function IsCellStateMovable(cellState: CellState): boolean {
+    return [
+        CellState.move,
+        CellState.sneak,
+        CellState.attack,
+        CellState.castle,
+        CellState.promote,
+    ].includes(GetMostImportantCellState(cellState));
 }
 
 export function AddCellState(cellState1: CellState, cellState2: CellState): CellState {
@@ -32,4 +42,8 @@ export function RemoveCellState(cellState1: CellState, cellState2: CellState): C
 
 export function DoCellStatesIntersect(cellState1: CellState, cellState2: CellState): boolean {
     return cellState1 == (cellState1 | cellState2);
+}
+
+export function GetMostImportantCellState(cellState: CellState): CellState {
+    return 2 ** ~~Math.log2(cellState);
 }

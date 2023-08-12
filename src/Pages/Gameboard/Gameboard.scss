@@ -5,8 +5,8 @@ $gameboard-gap: 0.3rem;
 
 $piece-size: 0.75;
 
-$cell-states: playedFrom, playedTo, selected, ready;
-$cell-state-colours: gold, gold, orangered, lightseagreen;
+$cell-states: playedFrom, playedTo, move, attack, promote, castle, sneak, selected, ready;
+$cell-state-colours: #ffd700, #ffd700, #0044ff, #f31818, #10f568, #9b0ba8, #9b0ba8, #ff4500, #20b2aa;
 
 #gameboard-body {
     --padding: 2rem;

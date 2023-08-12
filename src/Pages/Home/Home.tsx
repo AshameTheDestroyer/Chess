@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 import useContextMenu from "../../Utilities/Hooks/useContextMenu";
 import CustomButton from "../../Components/CustomButton/CustomButton";
@@ -51,8 +51,16 @@ export default function Home(): React.ReactElement {
         }],
     }];
 
-    const DISPLAYED_PIECE_COUNT: number = 4;
-    const PIECE_IMAGE_NAMES: Array<string> = Object.keys(PIECE_IMAGES);
+    const [displayedPieceImages, setDisplayedPieceImages] = useState<Array<string>>([]);
+
+    const
+        DISPLAYED_PIECE_COUNT: number = 4,
+        PIECE_IMAGE_NAMES: Array<string> = Object.keys(PIECE_IMAGES);
+
+    useEffect(() => {
+        setDisplayedPieceImages(new Array(DISPLAYED_PIECE_COUNT)
+            .fill(null).map(_item => PIECE_IMAGE_NAMES[~~(Math.random() * PIECE_IMAGE_NAMES.length)]));
+    }, []);
 
     return (
         <main id="home-page">
@@ -69,11 +77,8 @@ export default function Home(): React.ReactElement {
 
                 <div id="piece-image-displayer">
                     <figure> {
-                        new Array(DISPLAYED_PIECE_COUNT).fill(null).map((_item, i) => {
-                            const PIECE_IMAGE_NAME: string = PIECE_IMAGE_NAMES[~~(Math.random() * PIECE_IMAGE_NAMES.length)];
-
-                            return (<img key={i} src={PIECE_IMAGES[PIECE_IMAGE_NAME]} alt={`${PIECE_IMAGE_NAME}_icon`} />);
-                        })
+                        displayedPieceImages.map((_item, i) =>
+                            <img key={i} src={PIECE_IMAGES[displayedPieceImages[i]]} alt={`${displayedPieceImages[i]}_icon`} />)
                     } </figure>
 
                     <CustomButtonDisplayer>

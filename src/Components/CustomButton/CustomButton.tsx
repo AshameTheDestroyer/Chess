@@ -1,10 +1,10 @@
-import React, { useRef } from "react";
+import React from "react";
+import { Link } from "react-router-dom";
 
 import EitherOrNeither from "../../Utilities/Types/EitherOrNeither";
 import ComponentProps, { ComponentEventProps } from "../../Utilities/Types/ComponentProps";
 
 import "./CustomButton.scss";
-import { Link } from "react-router-dom";
 
 export type IconPlace = "left" | "right";
 
@@ -23,14 +23,12 @@ type CustomButtonProps = {
 }> & ComponentProps;
 
 export default function CustomButton(props: CustomButtonProps): React.ReactElement {
-    const customButtonElementRef = useRef<HTMLButtonElement>();
-
     function OnClick(e: React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
         props.events?.onClick?.(e);
 
         if (props.link == null) { return; }
 
-        const anchorElement: HTMLAnchorElement = customButtonElementRef.current?.querySelector("a");
+        const anchorElement: HTMLAnchorElement = e.currentTarget.querySelector("a");
         anchorElement.click();
     }
 
@@ -45,7 +43,6 @@ export default function CustomButton(props: CustomButtonProps): React.ReactEleme
 
                 props.className,
             ].toClassName()}
-            ref={customButtonElementRef}
 
             role={props.role ?? "button"}
             data-icon-place={props.iconPlace}

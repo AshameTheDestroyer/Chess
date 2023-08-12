@@ -6,16 +6,16 @@ import Coordinates from "../../../Utilities/Types/Coordinates";
 import SetUpGameActionType from "./ActionTypes/SetUpGameActionType";
 import MovePieceActionType from "./ActionTypes/MovePieceActionType";
 import DecodeFENCode, { INITIAL_GAME_FEN_CODE } from "./ChessDecoder";
-import InitializeGameboard from "../../../Functions/GameboardInitializer";
+import InitializeGameboard from "../../../Functions/InitializeGameboard";
 import AlterCellStateActionType from "./ActionTypes/AlterCellStateActionType";
-import { AddCellState, DoCellStatesIntersect, IsCellStateSingular, RemoveCellState } from "../../../Types/CellState";
+import PieceMovement, { GeneratePieceMovements } from "../../../Types/PieceMovements";
+import EvaluatePieceMovement, { FindKingRookCells } from "../../../Functions/EvaluatePieceMovement";
+import CellState, { AddCellState, DoCellStatesIntersect, IsCellStateMovable, IsCellStateSingular, RemoveCellState } from "../../../Types/CellState";
+import { PieceColour } from "../../../Types/Piece";
 
 type GameboardSliceType = {
-    pieceCells?: Array<Cell>;
     cells: Array<Array<Cell>>;
 };
-
-export const CHESS_PIECE_COUNT: number = 8;
 
 const INITIAL_STATE: GameboardSliceType = {
     cells: InitializeGameboard(),
@@ -27,29 +27,63 @@ export const GameboardSlice = createSlice({
 
     reducers: {
         SetUpInitialGame: (state: GameboardSliceType): void => {
-            state.pieceCells = DecodeFENCode(INITIAL_GAME_FEN_CODE);
-            state.pieceCells.forEach(pieceCell =>
-                state.cells[pieceCell.x][pieceCell.y].piece = pieceCell.piece);
+            GameboardSlice.caseReducers.SetUpGame(state, {
+                payload: { FENCode: INITIAL_GAME_FEN_CODE },
+                type: "gameboard/SetUpGame",
+            });
         },
 
         ResetGameboard: (state: GameboardSliceType): void => {
             state.cells = InitializeGameboard();
-            state.pieceCells = null;
         },
 
         SetUpGame: (state: GameboardSliceType, action: PayloadAction<SetUpGameActionType>): void => {
-            state.pieceCells = DecodeFENCode(action.payload.FENCode);
-            state.pieceCells.forEach(pieceCell =>
-                state.cells[pieceCell.x][pieceCell.y].piece = pieceCell.piece);
+            const pieceCells: Array<Cell> = DecodeFENCode(action.payload.FENCode);
+            pieceCells.forEach(pieceCell =>
+                state.cells[pieceCell.x][pieceCell.y].colouredPiece = pieceCell.colouredPiece);
         },
 
         AddStateToCell: (state: GameboardSliceType, action: PayloadAction<AlterCellStateActionType>): void => {
-            const { x, y } = action.payload;
+            const { x, y }: Coordinates = action.payload;
             state.cells[x][y].state = AddCellState(state.cells[x][y].state, action.payload.cellState);
+
+            let cellHasPiece: boolean = state.cells[x][y].colouredPiece != null,
+                cellIsReady: boolean = action.payload.cellState == CellState.ready;
+
+            if (cellIsReady) {
+                state.cells.flat().forEach(cell => cell.state = IsCellStateMovable(cell.state) ? null : cell.state);
+            }
+
+            if (!cellHasPiece || !cellIsReady) { return; }
+
+            const pieceMovements: Array<PieceMovement | Array<PieceMovement>> =
+                GeneratePieceMovements(state.cells[x][y].colouredPiece.piece);
+
+            pieceMovements.forEach(pieceMovement => {
+                if (pieceMovement instanceof Array) {
+                    for (let i: number = 0; i < pieceMovement.length; i++) {
+                        let moveIsExtendable: boolean = EvaluatePieceMovement({
+                            cells: state.cells,
+                            pieceMovement: pieceMovement[i],
+                            pieceCoordinates: action.payload,
+                        });
+
+                        if (!moveIsExtendable) { break; }
+                    }
+
+                    return;
+                }
+
+                EvaluatePieceMovement({
+                    pieceMovement,
+                    cells: state.cells,
+                    pieceCoordinates: action.payload,
+                });
+            });
         },
 
         RemoveStateFromCell: (state: GameboardSliceType, action: PayloadAction<AlterCellStateActionType>): void => {
-            const { x, y } = action.payload;
+            const { x, y }: Coordinates = action.payload;
             state.cells[x][y].state = RemoveCellState(state.cells[x][y].state, action.payload.cellState);
         },
 
@@ -58,8 +92,12 @@ export const GameboardSlice = createSlice({
                 throw new EvalError(`The Cell State "${action.payload.cellState}" is not a Singular Cell State`);
             }
 
-            const cell: Cell = state.cells.flat().find(cell => DoCellStatesIntersect(cell.state, action.payload.cellState));
+            let cellWasReady: boolean = action.payload.cellState == CellState.ready;
+            if (cellWasReady) {
+                state.cells.flat().forEach(cell => cell.state = IsCellStateMovable(cell.state) ? null : cell.state);
+            }
 
+            const cell: Cell = state.cells.flat().find(cell => DoCellStatesIntersect(cell.state, action.payload.cellState));
             if (cell == null) { return; }
 
             cell.state = RemoveCellState(cell.state, action.payload.cellState);
@@ -74,26 +112,54 @@ export const GameboardSlice = createSlice({
                 fromCell: Cell = state.cells[x1][y1],
                 toCell: Cell = state.cells[x2][y2];
 
-            let
-                movingPieceExists: boolean = fromCell.piece != null,
-                targetPieceExists: boolean = toCell.piece != null;
+            let pieceIsWhite: boolean = fromCell.colouredPiece?.colour == PieceColour.white,
+                movingPieceExists: boolean = fromCell.colouredPiece != null,
+                targetCellIsMovable: boolean = IsCellStateMovable(toCell.state),
+                targetCellIsCastlable: boolean = DoCellStatesIntersect(toCell.state, CellState.castle),
+                targetCellIsSneaking: boolean = DoCellStatesIntersect(toCell.state, CellState.sneak);
 
-            if (!movingPieceExists) {
-                throw new Error(`Cell at { x: ${x1}, y: ${y1} } contains no piece.`);
+            if (!targetCellIsMovable) { return; }
+            if (!movingPieceExists) { throw new Error(`Cell at { x: ${x1}, y: ${y1} } contains no piece.`); }
+
+            if (targetCellIsSneaking) {
+                delete state.cells[x2][y2 + ((pieceIsWhite) ? -1 : + 1)].colouredPiece;
             }
 
-            if (targetPieceExists) {
-                state.pieceCells =
-                    state.pieceCells.filter(pieceCell => pieceCell.x != x2 || pieceCell.y != y2);
+            if (targetCellIsCastlable) {
+                let kingHasMovedToLeft: boolean = x1 > x2;
+
+                const { leftRookCell, rightRookCell } =
+                    FindKingRookCells({ cells: state.cells, kingCell: fromCell }),
+                    rookCell: Cell = (kingHasMovedToLeft) ? leftRookCell : rightRookCell,
+                    rookTargetCell: Cell = (kingHasMovedToLeft) ? state.cells[x2 + 1][y2] : state.cells[x2 - 1][y2];
+
+                GameboardSlice.caseReducers.MovePiece(state, {
+                    payload: { from: rookCell, to: rookTargetCell },
+                    type: "gameboard/MovePiece",
+                });
             }
 
-            const movedPieceCell: Cell =
-                state.pieceCells.find(pieceCell => pieceCell.x == x1 && pieceCell.y == y1);
+            toCell.colouredPiece = fromCell.colouredPiece;
+            delete fromCell.colouredPiece;
 
-            movedPieceCell.x = x2, movedPieceCell.y = y2;
+            state.cells.flat().forEach(pieceCell => {
+                if (pieceCell.colouredPiece?.canBeSnuckUpon == null) { return; }
 
-            toCell.piece = fromCell.piece;
-            delete fromCell.piece;
+                const { x, y }: Coordinates = pieceCell;
+                state.cells[x][y].colouredPiece.canBeSnuckUpon &&= false;
+            });
+
+            let pieceRecordsSneaking: boolean = toCell.colouredPiece.canBeSnuckUpon != null,
+                pieceRecordsMovements: boolean = toCell.colouredPiece.hasMoved != null;
+
+            if (pieceRecordsSneaking) {
+                let pawnHasMoved: boolean = toCell.colouredPiece.hasMoved,
+                    pawnHasMovedTwoCells: boolean = Math.abs(y1 - y2) == 2;
+
+                toCell.colouredPiece.canBeSnuckUpon = !pawnHasMoved && pawnHasMovedTwoCells;
+            }
+
+            if (pieceRecordsMovements) { toCell.colouredPiece.hasMoved ||= true; }
         },
     },
 });
