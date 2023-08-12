@@ -36,3 +36,12 @@ Today we're not making any tedious Chess Game, no baby today we're making A WHOL
  4. Custom Button Displayer is just a wrapper that allows for the following displays:
     * Flexified: displays buttons in Flex Mode.
     * Gridding: displays buttons in Grid Mode.
+
+### Piece Movement System:
+1. Now, pieces can no longer move freely, and instead are tied to a system that ensures regular chess piece movements.
+2. All of the following moves were added, (which are BTW also cell states):
+   * Move: a literal move, nothing more.
+   * Attack: a move that targets a foe's piece.
+   * Castle: defending the king with one of his rooks.
+   * Promote: whenever a pawn reaches the last of the board, (still not fully implemented).
+   * Sneak: (yes IK that's not its name), when a foe's pawn jumps two cells and sit next to your pawn, you can attack it indirectly and diagonally.
