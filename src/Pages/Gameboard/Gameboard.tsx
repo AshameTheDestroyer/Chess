@@ -6,6 +6,7 @@ import Cell from "../../Types/Cell";
 import ColouredPiece from "../../Types/Piece";
 import useContextMenu from "../../Utilities/Hooks/useContextMenu";
 import { CHESS_PIECE_COUNT } from "../../Functions/GenerateEmptyGameboard";
+import PromotionPickerModal from "../../Modals/PromotionPickerModal/PromotionPickerModal";
 import ChessCoordinates, { CoordinatesToChessCoordinates } from "../../Types/ChessCoordinates";
 import ContextMenu, { ContextMenuGroupWithSelector } from "../../Utilities/Components/ContextMenu/ContextMenu";
 import CellState, { DoCellStatesIntersect, GetMostImportantCellState, IsCellStateMovable } from "../../Types/CellState";
@@ -28,7 +29,6 @@ import {
 import "./Gameboard.scss";
 
 import PIECE_IMAGES from "./PieceImages";
-import PromotionPickerModal from "../../Modals/PromotionPickerModal/PromotionPickerModal";
 
 export default function Gameboard(): React.ReactElement {
     const GameboardSlice = useSelector(SelectGameboardSlice);
