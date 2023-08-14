@@ -1,6 +1,6 @@
 import Cell from "../../../Types/Cell";
 import ColouredPiece, { Piece, PieceColour } from "../../../Types/Piece";
-import { CHESS_PIECE_COUNT } from "../../../Functions/InitializeGameboard";
+import { CHESS_PIECE_COUNT } from "../../../Functions/GenerateEmptyGameboard";
 import Coordinates, { IndexToCoordinates, RegularIndexToBoardIndex } from "../../../Utilities/Types/Coordinates";
 
 // INFO: FEN stands for Forsyth-Edwards Notation; a way to represent chess game via a string.

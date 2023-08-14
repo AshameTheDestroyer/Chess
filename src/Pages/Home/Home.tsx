@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 
 import useContextMenu from "../../Utilities/Hooks/useContextMenu";
-import CustomButton from "../../Components/CustomButton/CustomButton";
-import CustomButtonDisplayer from "../../Components/CustomButtonDisplayer/CustomButtonDisplayer";
-import ContextMenu, { ContextMenuGroupWithSelector } from "../../Components/ContextMenu/ContextMenu";
+import CustomButton from "../../Utilities/Components/CustomButton/CustomButton";
+import CustomButtonDisplayer from "../../Utilities/Components/CustomButtonDisplayer/CustomButtonDisplayer";
+import ContextMenu, { ContextMenuGroupWithSelector } from "../../Utilities/Components/ContextMenu/ContextMenu";
 
 import "./Home.scss";
 

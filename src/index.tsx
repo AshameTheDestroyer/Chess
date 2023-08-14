@@ -6,8 +6,8 @@ import { HashRouter, Route, Routes } from "react-router-dom";
 import Home from "./Pages/Home/Home";
 import { Store } from "./Store/Store";
 import "./Utilities/Extensions/ToClassName";
-import Header from "./Components/Header/Header";
 import Gameboard from "./Pages/Gameboard/Gameboard";
+import Header from "./Components/Header/Header";
 
 import "./index.scss";
 

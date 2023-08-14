@@ -1,0 +1,51 @@
+@use "../../index.scss";
+
+#promotion-picker-modal-background {
+    background-color: var(--half-transparent);
+
+    filter: blur(1rem);
+}
+
+#promotion-picker-modal {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    place-content: center;
+    place-items: center;
+    gap: 1rem;
+
+    padding: 2rem;
+
+    background-color: var(--background-colour);
+
+    border: 0.2rem solid var(--fore-colour);
+
+    @include index.box-shadow($thickness: 0.5rem, $blurriness: 1rem, $colour: #10f568);
+
+    &>button {
+        $size: 4rem;
+
+        width: $size;
+        height: $size;
+
+        display: flex;
+        flex-direction: column;
+        place-content: center;
+        place-items: center;
+
+        &>img {
+            --size: 80%;
+
+            width: var(--size);
+            height: var(--size);
+
+            filter: drop-shadow(0.35rem 0.35rem 0 black);
+
+            transition: 500ms width, 500ms height;
+        }
+
+        &:is(:hover, :focus-within)>img {
+            --size: 100%;
+        }
+    }
+}

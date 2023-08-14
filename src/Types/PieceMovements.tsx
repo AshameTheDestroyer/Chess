@@ -1,7 +1,7 @@
 import { Piece } from "./Piece";
 import Coordinates from "../Utilities/Types/Coordinates";
 import EitherOrNeither from "../Utilities/Types/EitherOrNeither";
-import { CHESS_PIECE_COUNT } from "../Functions/InitializeGameboard";
+import { CHESS_PIECE_COUNT } from "../Functions/GenerateEmptyGameboard";
 
 type PieceMovement = {
     isFirstMoveOnly?: boolean;

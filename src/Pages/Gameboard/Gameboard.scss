@@ -81,15 +81,10 @@ $cell-state-colours: #ffd700, #ffd700, #0044ff, #f31818, #10f568, #9b0ba8, #9b0b
             @each $cell-state in $cell-states {
 
                 &.#{$cell-state}-cell {
-                    @include emphasize-cell();
-
                     $cell-state-colour: nth($list: $cell-state-colours, $n: index($list: $cell-states, $value: $cell-state));
 
-                    box-shadow: 0.25rem 0.25rem 0.75rem $cell-state-colour,
-                        -0.25rem 0.25rem 0.75rem $cell-state-colour,
-                        0.25rem -0.25rem 0.75rem $cell-state-colour,
-                        -0.25rem -0.25rem 0.75rem $cell-state-colour,
-                    ;
+                    @include emphasize-cell();
+                    @include index.box-shadow($thickness: 0.25rem, $blurriness: 0.75rem, $colour: $cell-state-colour);
                 }
             }
 
@@ -98,7 +93,6 @@ $cell-state-colours: #ffd700, #ffd700, #0044ff, #f31818, #10f568, #9b0ba8, #9b0b
                 --margin-modifier-left: -0.75;
                 --margin-modifier-bottom: -0.9;
                 --scale-modifier: 1;
-
 
                 &::before,
                 &::after {

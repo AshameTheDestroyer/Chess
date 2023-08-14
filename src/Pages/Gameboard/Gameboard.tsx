@@ -5,10 +5,10 @@ import React, { useEffect, useRef, useState } from "react";
 import Cell from "../../Types/Cell";
 import ColouredPiece from "../../Types/Piece";
 import useContextMenu from "../../Utilities/Hooks/useContextMenu";
-import { CHESS_PIECE_COUNT } from "../../Functions/InitializeGameboard";
+import { CHESS_PIECE_COUNT } from "../../Functions/GenerateEmptyGameboard";
 import ChessCoordinates, { CoordinatesToChessCoordinates } from "../../Types/ChessCoordinates";
+import ContextMenu, { ContextMenuGroupWithSelector } from "../../Utilities/Components/ContextMenu/ContextMenu";
 import CellState, { DoCellStatesIntersect, GetMostImportantCellState, IsCellStateMovable } from "../../Types/CellState";
-import ContextMenu, { ContextMenuGroupWithSelector } from "../../Components/ContextMenu/ContextMenu";
 
 import Coordinates, {
     CoordinateToIndex,
@@ -28,6 +28,7 @@ import {
 import "./Gameboard.scss";
 
 import PIECE_IMAGES from "./PieceImages";
+import PromotionPickerModal from "../../Modals/PromotionPickerModal/PromotionPickerModal";
 
 export default function Gameboard(): React.ReactElement {
     const GameboardSlice = useSelector(SelectGameboardSlice);
@@ -35,6 +36,8 @@ export default function Gameboard(): React.ReactElement {
 
     const [draggedCell, setDraggedCell] = useState<Cell>(null);
     const draggedPieceImageElementRef = useRef<HTMLImageElement>();
+
+    const [readyToPromoteCell, setReadyToPromoteCell] = useState<Cell>(null);
 
     const [
         isContextMenuOpen,
@@ -120,9 +123,12 @@ export default function Gameboard(): React.ReactElement {
         <main id="gameboard-body">
             <GameboardElement
                 draggedCell={draggedCell}
+                readyToPromoteCell={readyToPromoteCell}
+                draggedPieceImageElementRef={draggedPieceImageElementRef}
+
                 setDraggedCell={setDraggedCell}
                 setIsContextMenuOpen={setIsContextMenuOpen}
-                draggedPieceImageElementRef={draggedPieceImageElementRef}
+                setReadyToPromoteCell={setReadyToPromoteCell}
             />
 
             <DraggedPieceElement
@@ -144,10 +150,12 @@ export default function Gameboard(): React.ReactElement {
 
 type GameboardElementProps = {
     draggedCell: Cell;
+    readyToPromoteCell: Cell;
     draggedPieceImageElementRef: React.MutableRefObject<HTMLImageElement>;
 
     setDraggedCell: React.Dispatch<React.SetStateAction<Cell>>;
     setIsContextMenuOpen: React.Dispatch<React.SetStateAction<boolean>>;
+    setReadyToPromoteCell: React.Dispatch<React.SetStateAction<Cell>>;
 };
 
 function GameboardElement(props: GameboardElementProps): React.ReactElement {
@@ -210,13 +218,13 @@ function GameboardElement(props: GameboardElementProps): React.ReactElement {
         if (props.draggedCell != null) { ResetDragging(); }
 
         let pieceHasMoved: boolean = EvaluatePieceMovement(cellElement),
-            cellWasReady: boolean = cellElement.classList.contains("ready-cell"),
-            cellWasSelected: boolean = cellElement.classList.contains("selected-cell");
+            cellIsReady: boolean = cellElement.classList.contains("ready-cell"),
+            cellIsSelected: boolean = cellElement.classList.contains("selected-cell");
 
         RemoveStateFromSingularCellElement(CellState.ready);
         RemoveStateFromSingularCellElement(CellState.selected);
 
-        if (pieceHasMoved || (cellWasSelected && cellWasReady)) { return; }
+        if (pieceHasMoved || (cellIsSelected && cellIsReady)) { return; }
 
         AddStateToCellElement(cellElement, CellState.selected);
         AddStateToCellElement(cellElement, CellState.ready);
@@ -231,10 +239,12 @@ function GameboardElement(props: GameboardElementProps): React.ReactElement {
         Dispatch(RemoveStateFromSingularCell({ cellState }));
     }
 
-    function EvaluatePieceMovement(cellElement: HTMLButtonElement, predefinedOptions?: {
+    type EvaluatePieceMovementPredefinedOptionsProps = {
         toCell: Cell,
         fromCell: Cell,
-    }): boolean {
+    };
+
+    function EvaluatePieceMovement(cellElement: HTMLButtonElement, predefinedOptions?: EvaluatePieceMovementPredefinedOptionsProps): boolean {
         const readyCell: Cell = GameboardSlice.cells.flat().find(cell => DoCellStatesIntersect(cell.state, CellState.ready));
         if (readyCell == null && predefinedOptions?.fromCell == null) { return false; }
 
@@ -253,7 +263,8 @@ function GameboardElement(props: GameboardElementProps): React.ReactElement {
         let movingPieceExists: boolean = movingPiece != null,
             targetPieceExists: boolean = targetPiece != null,
             targetPieceIsFoe: boolean = targetPieceExists && movingPiece?.colour != targetPiece?.colour,
-            targetCellIsMovable: boolean = IsCellStateMovable(toCell.state);
+            targetCellIsMovable: boolean = IsCellStateMovable(toCell.state),
+            cellIsPromotable: boolean = DoCellStatesIntersect(toCell.state, CellState.promote);
 
         if (!targetCellIsMovable) { return false; }
         if (!movingPieceExists || (targetPieceExists && !targetPieceIsFoe)) { return false; }
@@ -262,6 +273,13 @@ function GameboardElement(props: GameboardElementProps): React.ReactElement {
             from: { x: x1, y: y1 },
             to: { x: x2, y: y2 },
         }));
+
+        if (cellIsPromotable) {
+            props.setReadyToPromoteCell({
+                ...toCell,
+                colouredPiece: movingPiece,
+            });
+        }
 
         RemoveStateFromSingularCellElement(CellState.ready);
         RemoveStateFromSingularCellElement(CellState.selected);
@@ -358,18 +376,32 @@ function GameboardElement(props: GameboardElementProps): React.ReactElement {
     >
         {
             new Array(CHESS_PIECE_COUNT ** 2).fill(null).map((_, i) =>
-                <CellElement key={i} index={i} draggedCell={props.draggedCell} />)
+                <CellElement
+                    key={i}
+
+                    index={i}
+                    draggedCell={props.draggedCell}
+                />
+            )
         }
+
+        <PromotionPickerModal
+            isOpen={props.readyToPromoteCell != null}
+            readyToPromoteCell={props.readyToPromoteCell}
+
+            setIsOpen={value => props.setReadyToPromoteCell((value) ? props.readyToPromoteCell : null)}
+        />
     </section>;
 }
 
 type CellProps = {
     index: number;
     draggedCell: Cell;
-}
+};
 
 function CellElement(props: CellProps): React.ReactElement {
     const GameboardSlice = useSelector(SelectGameboardSlice);
+    const cellElementRef = useRef<HTMLButtonElement>(null);
 
     const
         index: number = RegularIndexToBoardIndex(props.index, CHESS_PIECE_COUNT),
@@ -391,6 +423,7 @@ function CellElement(props: CellProps): React.ReactElement {
                     .filter(([_key, value]) => DoCellStatesIntersect(cell.state, value))
                     .map(([key, _value]) => `${key}-cell`)
             ].toClassName()}
+            ref={cellElementRef}
 
             tabIndex={-1}
             data-index={index}

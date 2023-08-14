@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 
-import NavigationBar from "../NavigationBar/NavigationBar";
-import HamburgerButton from "../HamburgerButton/HamburgerButton";
+import NavigationBar from "../../Utilities/Components/NavigationBar/NavigationBar";
+import HamburgerButton from "../../Utilities/Components/HamburgerButton/HamburgerButton";
 
 import "./Header.scss";
 

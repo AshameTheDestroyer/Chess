@@ -1,8 +1,8 @@
 import { createPortal } from "react-dom";
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 
-import Either from "../../Utilities/Types/Either";
-import Coordinates from "../../Utilities/Types/Coordinates";
+import Either from "../../Types/Either";
+import Coordinates from "../../Types/Coordinates";
 
 import "./ContextMenu.scss";
 
@@ -37,12 +37,12 @@ type ContextMenuProps = {
     isOpen: boolean;
 
     setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
-} & Coordinates & Either<{
+} & Either<{
     groups: Array<ContextMenuGroup>;
 }, {
     clickedElement: HTMLElement;
     groups: Array<ContextMenuGroupWithSelector>;
-}>;
+}> & Coordinates;
 
 const
     PREVIOUS_CONTEXT_MENU_GROUP_TAB_NAME: string = "#previous-tab",
@@ -64,8 +64,6 @@ export default function ContextMenu(props: ContextMenuProps): React.ReactElement
         return () => RemoveExtraContextMenuPreviousButtons();
     }, [openTab]);
 
-    let groups: Array<ContextMenuGroupWithSelector> = props.groups;
-
     const previousContextMenuButton: ContextMenuButtonWithSelector = {
         name: PREVIOUS_CONTEXT_MENU_BUTTON_NAME,
         opensTab: previousOpenTabs.at(-1),
@@ -76,7 +74,7 @@ export default function ContextMenu(props: ContextMenuProps): React.ReactElement
         options: [previousContextMenuButton],
     };
 
-    groups = [previousContextMenuGroup, ...groups];
+    const groups: Array<ContextMenuGroupWithSelector> = [previousContextMenuGroup, ...props.groups];
 
     function RefreshWidth(): void {
         const contextMenu: HTMLDivElement = contextMenuRef.current;

@@ -36,3 +36,12 @@ type ColouredPiece = {
 }>>>;
 
 export default ColouredPiece;
+
+export function IsPiecePromotableTo(piece: Piece): boolean {
+    return [
+        Piece.knight,
+        Piece.bishop,
+        Piece.rook,
+        Piece.queen,
+    ].includes(piece);
+}

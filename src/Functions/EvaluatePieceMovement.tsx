@@ -2,7 +2,7 @@ import Cell from "../Types/Cell";
 import { Piece } from "../Types/Piece";
 import PieceMovement from "../Types/PieceMovements";
 import Coordinates from "../Utilities/Types/Coordinates";
-import { CHESS_PIECE_COUNT } from "./InitializeGameboard";
+import { CHESS_PIECE_COUNT } from "./GenerateEmptyGameboard";
 import CellState, { AddCellState } from "../Types/CellState";
 import AddPieceMovementToPieceCoordinates from "./AddPieceMovementToPieceCoordinates";
 

@@ -1,0 +1,71 @@
+.modal-background {
+    position: fixed;
+    inset: 0;
+
+    display: flex;
+    flex-direction: column;
+    place-content: center;
+    place-items: center;
+
+    padding: 2rem;
+
+    z-index: 2;
+
+    &:not(.pop-up-modal-background) {
+        background-color: var(--half-transparent);
+
+        animation-name: modal-background-entrance;
+        animation-duration: 250ms;
+        animation-iteration-count: 1;
+        animation-fill-mode: forwards;
+        animation-direction: normal;
+        animation-timing-function: cubic-bezier(1, 1, 1, 1);
+
+        @keyframes modal-background-entrance {
+
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+    }
+}
+
+.modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+
+    background-image: var(--background-image);
+
+    border-radius: 1.5rem;
+
+    box-shadow: 1.5rem 1.5rem 1rem var(--half-transparent);
+
+    animation-name: modal-entrance;
+    animation-duration: 500ms;
+    animation-iteration-count: 1;
+    animation-fill-mode: forwards;
+    animation-direction: normal;
+    animation-timing-function: var(--best-bezier-curve);
+
+    z-index: 3;
+
+    @keyframes modal-entrance {
+
+        from {
+            transform: translate(-50%, -50%) scale(0);
+        }
+
+        to {
+            transform: translate(-50%, -50%) scale(1);
+        }
+    }
+
+    &.pop-up-modal {
+        position: absolute;
+    }
+}

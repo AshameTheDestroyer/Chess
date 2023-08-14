@@ -160,6 +160,15 @@ h1.big-header {
     @include break(bottom);
 }
 
+@mixin box-shadow($thickness: 0.2rem, $blurriness, $colour: var(--main-colour)) {
+    box-shadow:
+        $thickness $thickness $blurriness $colour,
+        calc(-1 * $thickness) $thickness $blurriness $colour,
+        $thickness calc(-1 * $thickness) $blurriness $colour,
+        calc(-1 * $thickness) calc(-1 * $thickness) $blurriness $colour,
+    ;
+}
+
 @mixin text-shadow($thickness: 0.2rem, $colour: var(--main-colour)) {
     text-shadow:
         $thickness $thickness 0 $colour,
