@@ -43,5 +43,6 @@ Today we're not making any tedious Chess Game, no baby today we're making A WHOL
    * Move: a literal move, nothing more.
    * Attack: a move that targets a foe's piece.
    * Castle: defending the king with one of his rooks.
-   * Promote: whenever a pawn reaches the last of the board, (still not fully implemented).
+   * Promote: whenever a pawn reaches the last of the board.
    * Sneak: (yes IK that's not its name), when a foe's pawn jumps two cells and sit next to your pawn, you can attack it indirectly and diagonally.
+3. Promotion Picker Modal, which's a modal that appears whenever a pawn's boutta promote, and it has a perfect visual effect to it.
