@@ -1,7 +1,7 @@
 import React from "react";
 
-import Either from "../../Utilities/Types/Either";
-import ComponentProps from "../../Utilities/Types/ComponentProps";
+import Either from "../../Types/Either";
+import ComponentProps from "../../Types/ComponentProps";
 
 import "./CustomButtonDisplayer.scss";
 

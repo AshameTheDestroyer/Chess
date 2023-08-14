@@ -1,8 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
-import EitherOrNeither from "../../Utilities/Types/EitherOrNeither";
-import ComponentProps, { ComponentEventProps } from "../../Utilities/Types/ComponentProps";
+import EitherOrNeither from "../../Types/EitherOrNeither";
+import ComponentProps, { ComponentEventProps } from "../../Types/ComponentProps";
 
 import "./CustomButton.scss";
 

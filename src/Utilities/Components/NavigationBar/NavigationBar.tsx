@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
-import { ChildlessComponentProps } from "../../Utilities/Types/ComponentProps";
+import { ChildlessComponentProps } from "../../Types/ComponentProps";
 
 import "./NavigationBar.scss";
 
