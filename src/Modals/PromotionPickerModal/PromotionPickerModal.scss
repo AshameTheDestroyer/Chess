@@ -33,7 +33,7 @@
         place-content: center;
         place-items: center;
 
-        &>img {
+        &>svg {
             --size: 80%;
 
             width: var(--size);
@@ -42,7 +42,7 @@
             transition: 500ms width, 500ms height;
         }
 
-        &:is(:hover, :focus-within)>img {
+        &:is(:hover, :focus-within)>svg {
             --size: 100%;
         }
     }

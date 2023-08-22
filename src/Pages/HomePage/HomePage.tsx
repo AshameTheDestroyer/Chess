@@ -1,8 +1,10 @@
 import React from "react";
+import { useSelector } from "react-redux";
 
 import useContextMenu from "../../Utilities/Hooks/useContextMenu";
 import useGeneratePieceImages from "../../Hooks/useGeneratePieceImages";
 import CustomButton from "../../Utilities/Components/CustomButton/CustomButton";
+import { SelectPreferenceSlice } from "../../Store/Features/PreferenceSlice/PreferenceSlice";
 import CustomButtonDisplayer from "../../Utilities/Components/CustomButtonDisplayer/CustomButtonDisplayer";
 import ContextMenu, { ContextMenuGroupWithSelector } from "../../Utilities/Components/ContextMenu/ContextMenu";
 
@@ -13,6 +15,8 @@ import PIECE_IMAGES from "../GameboardPage/PieceImages";
 import chess_icon from "../../assets/Icons/chess.svg";
 
 export default function HomePage(): React.ReactElement {
+    const PreferenceSlice = useSelector(SelectPreferenceSlice);
+
     const [
         isContextMenuOpen,
         contextMenuCoordinates,
@@ -74,14 +78,20 @@ export default function HomePage(): React.ReactElement {
                 <div id="piece-image-displayer">
                     <figure> {
                         displayedPieceImages.map((displayedPieceImage, i) =>
-                            <img
-                                key={i}
-                                className="piece"
+                            (PIECE_IMAGES[displayedPieceImage] as React.FunctionComponent<React.SVGProps<SVGSVGElement> & { title?: string }>)({
+                                key: i,
 
-                                draggable={false}
-                                alt={`${displayedPieceImage}_icon`}
-                                src={PIECE_IMAGES[displayedPieceImage]}
-                            />
+                                className: [
+                                    "piece",
+                                    `piece-${displayedPieceImage.split("_")[0]}`,
+                                ].toClassName(),
+
+                                style: {
+                                    "--dark-colour": PreferenceSlice.chessTheme.darkColour,
+                                    "--light-colour": PreferenceSlice.chessTheme.lightColour,
+                                    "--board-colour": PreferenceSlice.chessTheme.boardColour,
+                                } as React.CSSProperties,
+                            })
                         )
                     } </figure>
 

@@ -162,7 +162,7 @@ h1.big-header {
     @include break(bottom);
 }
 
-@mixin box-shadow($thickness: 0.2rem, $blurriness, $colour: var(--main-colour)) {
+@mixin box-shadow($thickness: 0.2rem, $blurriness: 0rem, $colour: var(--main-colour)) {
     box-shadow:
         $thickness $thickness $blurriness $colour,
         calc(-1 * $thickness) $thickness $blurriness $colour,
@@ -178,4 +178,9 @@ h1.big-header {
         $thickness calc(-1 * $thickness) 0 $colour,
         calc(-1 * $thickness) calc(-1 * $thickness) 0 $colour,
     ;
+}
+
+@mixin drop-shadow($thickness: 0.2rem, $blurriness: 0rem, $colour: var(--main-colour)) {
+    filter:
+        drop-shadow($thickness $thickness $blurriness $colour) drop-shadow(calc(-1 * $thickness) $thickness $blurriness $colour) drop-shadow($thickness calc(-1 * $thickness) $blurriness $colour) drop-shadow(calc(-1 * $thickness) calc(-1 * $thickness) $blurriness $colour);
 }

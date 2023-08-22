@@ -32,16 +32,20 @@
 
             grid-row: 1;
 
-            &>figure>img {
+            &>figure>svg {
+                $size: calc(60% - var(--padding) * 2);
+
                 position: absolute;
                 top: 50%;
                 left: 50%;
                 transform: translate(-50%, -50%) scale(0);
 
-                height: calc(60% - var(--padding) * 2);
-                aspect-ratio: 1;
+                width: $size;
+                height: $size;
 
                 opacity: 0;
+
+                @include index.drop-shadow($colour: var(--board-colour), $blurriness: 0.1rem, $thickness: 0.3rem);
 
                 @for $i from 1 through 4 {
 
