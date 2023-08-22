@@ -46,3 +46,16 @@ Today we're not making any tedious Chess Game, no baby today we're making A WHOL
    * Promote: whenever a pawn reaches the last of the board.
    * Sneak: (yes IK that's not its name), when a foe's pawn jumps two cells and sit next to your pawn, you can attack it indirectly and diagonally.
 3. Promotion Picker Modal, which's a modal that appears whenever a pawn's boutta promote, and it has a perfect visual effect to it.
+
+### Theme Picker:
+1. Simply put: now there's a Preference Page, that you can navigate to throughout the navigation bar within the page-shared header.
+2. The Preference Page only contains Chess Theme to pick from at the meantime, which contains the following themes:
+   * Classic.
+   * Wooden.
+   * Modern.
+   * Crimson.
+   * Golden.
+   * Bits.
+   * Grass.
+3. Finally, it uses Local Storage to save these changes and preferences.
+4. An additional edit has been required, is that all pieces are now rendered as SVGs, not regular images, so that it can be used to change its fill and stroke colours.
