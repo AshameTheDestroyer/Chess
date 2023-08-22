@@ -113,6 +113,8 @@ img {
 }
 
 h1.big-header {
+    white-space: break-spaces;
+    line-break: anywhere;
     font-size: 5rem;
 
     color: var(--main-colour);

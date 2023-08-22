@@ -16,7 +16,7 @@
 
     padding: 2rem;
 
-    background-color: var(--background-colour);
+    background-color: var(--board-colour);
 
     border: 0.2rem solid var(--fore-colour);
 
@@ -38,8 +38,6 @@
 
             width: var(--size);
             height: var(--size);
-
-            filter: drop-shadow(0.35rem 0.35rem 0 black);
 
             transition: 500ms width, 500ms height;
         }

@@ -3,11 +3,14 @@ import ReactDOM from "react-dom/client";
 import React, { useEffect } from "react";
 import { HashRouter, Route, Routes } from "react-router-dom";
 
-import Home from "./Pages/Home/Home";
 import { Store } from "./Store/Store";
 import "./Utilities/Extensions/ToClassName";
-import Gameboard from "./Pages/Gameboard/Gameboard";
+import "./Utilities/Extensions/ChooseRandomly";
 import Header from "./Components/Header/Header";
+import HomePage from "./Pages/HomePage/HomePage";
+import GameboardPage from "./Pages/GameboardPage/GameboardPage";
+import PreferencePage from "./Pages/PreferencePage/PreferencePage";
+import NotFound404Page from "./Pages/NotFound404Page/NotFound404Page";
 
 import "./index.scss";
 
@@ -23,12 +26,14 @@ function Index(): React.ReactElement {
     }, []);
 
     return (
-        <HashRouter basename={window.location.pathname || ""}>
+        <HashRouter /*basename={window.location.pathname || ""}*/ >
             <Header />
             <Provider store={Store}>
                 <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/Gameboard" element={<Gameboard />} />
+                    <Route path="/" element={<HomePage />} />
+                    <Route path="/Gameboard" element={<GameboardPage />} />
+                    <Route path="/Preference" element={<PreferencePage />} />
+                    <Route path="/*" element={<NotFound404Page />} />
                 </Routes>
             </Provider>
         </HashRouter>

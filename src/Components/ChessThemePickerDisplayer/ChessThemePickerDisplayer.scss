@@ -1,0 +1,79 @@
+#chess-theme-picker-section {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+
+    #chess-theme-picker-displayer {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+        gap: 2rem;
+
+        .chess-theme-picker {
+            display: flex;
+            flex-direction: column;
+            place-content: center space-between;
+            place-items: center space-between;
+            gap: 2rem;
+
+            padding: 2rem;
+
+            background-color: var(--background-darker-colour);
+
+            border: 0.3rem solid var(--fore-colour);
+            border-radius: 1rem;
+
+            transition:
+                color 500ms,
+                border 500ms,
+                background-color 500ms,
+            ;
+
+            &-equipped {
+                background-color: var(--fore-colour);
+                color: var(--dark-colour);
+                border-color: var(--dark-colour);
+
+                .custom-button {
+                    --background-darker-colour: var(--dark-colour);
+                    --main-colour: var(--light-colour);
+                }
+            }
+
+            .custom-button {
+                transition:
+                    border 200ms,
+                    transform 200ms,
+                    box-shadow 200ms,
+                    background-color 200ms,
+                ;
+            }
+
+            &>figure {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                grid-template-rows: repeat(2, 1fr);
+                place-content: center;
+                place-items: center;
+                place-self: center;
+                gap: 0.3rem;
+
+                padding: 1rem;
+
+                background-color: var(--board-colour);
+                border: 0.2rem solid var(--light-colour);
+
+                .cell {
+                    padding: 0.25rem;
+
+                    &:is(:nth-child(2), :nth-child(3)) {
+                        background-color: var(--dark-colour);
+                    }
+
+                    &:is(:nth-child(1), :nth-child(4)) {
+                        background-color: var(--light-colour);
+                    }
+                }
+            }
+        }
+    }
+}

@@ -21,6 +21,7 @@ export default function Header(): React.ReactElement {
                     "Gameboard",
                     "Puzzles",
                     "Learn",
+                    "Preference",
                 ]}
 
                 setIsOpen={setIsNavigationBarOpen}

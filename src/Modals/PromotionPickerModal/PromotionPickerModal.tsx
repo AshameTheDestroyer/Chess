@@ -7,7 +7,7 @@ import Modal, { ModalComponentProps } from "../../Utilities/Components/Modal/Mod
 
 import "./PromotionPickerModal.scss";
 
-import PIECE_IMAGES from "../../Pages/Gameboard/PieceImages";
+import PIECE_IMAGES from "../../Pages/GameboardPage/PieceImages";
 import Cell from "../../Types/Cell";
 
 type PromotionPickerModalProps = {
@@ -52,11 +52,15 @@ export default function PromotionPickerModal(props: PromotionPickerModalProps): 
 
                         onClick={OnButtonClick}
                     >
-                        <img
-                            draggable={false}
-                            src={PIECE_IMAGES[`${props.readyToPromoteCell?.colouredPiece?.colour}_${piece}`]}
-                            alt={`${props.readyToPromoteCell?.colouredPiece?.colour}_${piece}_icon`}
-                        />
+                        {
+                            (props.readyToPromoteCell?.colouredPiece != null) &&
+                            PIECE_IMAGES[`${props.readyToPromoteCell.colouredPiece.colour}_${piece}`]({
+                                className: [
+                                    "piece",
+                                    `piece-${props.readyToPromoteCell.colouredPiece.colour}`,
+                                ].toClassName(),
+                            })
+                        }
                     </button>
                 )
             }

@@ -35,9 +35,9 @@ $cell-state-colours: #ffd700, #ffd700, #0044ff, #f31818, #10f568, #9b0ba8, #9b0b
 
         padding: $padding;
 
-        background-color: var(--background-darker-colour);
+        background-color: var(--board-colour);
 
-        border: 0.2rem solid var(--fore-colour);
+        border: 0.2rem solid var(--light-colour);
 
         .cell {
             position: relative;
@@ -45,7 +45,7 @@ $cell-state-colours: #ffd700, #ffd700, #0044ff, #f31818, #10f568, #9b0ba8, #9b0b
             width: 100%;
             height: 100%;
 
-            background-color: var(--fore-colour);
+            background-color: var(--light-colour);
 
             transition: transform 500ms, box-shadow 500ms;
 
@@ -55,11 +55,7 @@ $cell-state-colours: #ffd700, #ffd700, #0044ff, #f31818, #10f568, #9b0ba8, #9b0b
                 $to: calc(($i + 1) * 8 - $is-even);
 
                 &:not(:nth-child(-2n + #{$from})):nth-child(-2n + #{$to}) {
-                    background-color: var(--background-colour);
-
-                    &::after {
-                        color: var(--fore-colour);
-                    }
+                    background-color: var(--dark-colour);
                 }
             }
 
@@ -105,6 +101,8 @@ $cell-state-colours: #ffd700, #ffd700, #0044ff, #f31818, #10f568, #9b0ba8, #9b0b
                     place-content: center;
                     place-items: center;
 
+                    color: var(--light-colour);
+
                     transition: left 500ms, bottom 500ms, transform 500ms;
                 }
 
@@ -129,14 +127,14 @@ $cell-state-colours: #ffd700, #ffd700, #0044ff, #f31818, #10f568, #9b0ba8, #9b0b
                 content: attr(data-character);
             }
 
-            img {
-                width: calc($piece-size * 100%);
-                aspect-ratio: 1;
+            svg {
+                $size: calc($piece-size * 100%);
 
-                filter: drop-shadow(0.35rem 0.35rem 0 black);
+                width: $size;
+                height: $size;
             }
 
-            &.dragged-cell img {
+            &.dragged-cell svg {
                 display: none;
             }
         }
@@ -152,11 +150,27 @@ $cell-state-colours: #ffd700, #ffd700, #0044ff, #f31818, #10f568, #9b0ba8, #9b0b
     width: calc(($gameboard-width - $gameboard-gap * 2) / 8 * $piece-size);
     aspect-ratio: 1;
 
-    filter: drop-shadow(0.35rem 0.35rem 0 black);
-
     pointer-events: none;
 
     z-index: 10;
+}
+
+svg.piece {
+    filter: drop-shadow(0.35rem 0.35rem 0 black) saturate(150%);
+
+    &-white {
+        path {
+            fill: var(--light-colour);
+            stroke: var(--dark-colour);
+        }
+    }
+
+    &-black {
+        path {
+            fill: var(--dark-colour);
+            stroke: var(--light-colour);
+        }
+    }
 }
 
 @media (min-width: index.$first-screen-width) {

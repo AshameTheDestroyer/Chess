@@ -7,6 +7,7 @@ import ColouredPiece from "../../Types/Piece";
 import useContextMenu from "../../Utilities/Hooks/useContextMenu";
 import { CHESS_PIECE_COUNT } from "../../Functions/GenerateEmptyGameboard";
 import PromotionPickerModal from "../../Modals/PromotionPickerModal/PromotionPickerModal";
+import { SelectPreferenceSlice } from "../../Store/Features/PreferenceSlice/PreferenceSlice";
 import ChessCoordinates, { CoordinatesToChessCoordinates } from "../../Types/ChessCoordinates";
 import ContextMenu, { ContextMenuGroupWithSelector } from "../../Utilities/Components/ContextMenu/ContextMenu";
 import CellState, { DoCellStatesIntersect, GetMostImportantCellState, IsCellStateMovable } from "../../Types/CellState";
@@ -26,16 +27,16 @@ import {
     RemoveStateFromSingularCell,
 } from "../../Store/Features/GameboardSlice/GameboardSlice";
 
-import "./Gameboard.scss";
+import "./GameboardPage.scss";
 
 import PIECE_IMAGES from "./PieceImages";
 
-export default function Gameboard(): React.ReactElement {
+export default function GameboardPage(): React.ReactElement {
     const GameboardSlice = useSelector(SelectGameboardSlice);
     const Dispatch = useDispatch();
 
     const [draggedCell, setDraggedCell] = useState<Cell>(null);
-    const draggedPieceImageElementRef = useRef<HTMLImageElement>();
+    const draggedPieceImageElementRef = useRef<SVGSVGElement>();
 
     const [readyToPromoteCell, setReadyToPromoteCell] = useState<Cell>(null);
 
@@ -53,12 +54,12 @@ export default function Gameboard(): React.ReactElement {
             name: "Restart",
             keyShortcut: "Ctrl+R",
             selector: "#gameboard",
-            iconURL: PIECE_IMAGES.black_king,
+            // iconURL: PIECE_IMAGES.black_king,
             onClick: _e => { console.log("Game's Restarted."); },
         }, {
             name: "Capture",
             selector: ".cell-with-piece",
-            iconURL: PIECE_IMAGES.white_queen,
+            // iconURL: PIECE_IMAGES.white_queen,
             onClick: _e => { console.log("Piece's Capture."); },
             condition: GameboardSlice.cells.flat().find(cell => DoCellStatesIntersect(cell.state, CellState.ready)) != null
         }, {
@@ -89,20 +90,20 @@ export default function Gameboard(): React.ReactElement {
         options: [{
             name: "Furthermore",
             opensTab: "furthermore-tab",
-            iconURL: PIECE_IMAGES.black_knight,
+            // iconURL: PIECE_IMAGES.black_knight,
         }],
     }, {
         tabName: "furthermore-tab",
         options: [{
             name: "Good",
-            iconURL: PIECE_IMAGES.black_pawn,
+            // iconURL: PIECE_IMAGES.black_pawn,
             onClick: _e => { console.log("Gooooooooood."); },
         }],
     }, {
         tabName: "furthermore-tab",
         options: [{
             name: "Bad",
-            iconURL: PIECE_IMAGES.white_pawn,
+            // iconURL: PIECE_IMAGES.white_pawn,
             onClick: _e => { console.log("Baaaaaaaaad."); },
         }],
     }, {
@@ -151,7 +152,7 @@ export default function Gameboard(): React.ReactElement {
 type GameboardElementProps = {
     draggedCell: Cell;
     readyToPromoteCell: Cell;
-    draggedPieceImageElementRef: React.MutableRefObject<HTMLImageElement>;
+    draggedPieceImageElementRef: React.MutableRefObject<SVGSVGElement>;
 
     setDraggedCell: React.Dispatch<React.SetStateAction<Cell>>;
     setIsContextMenuOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -160,6 +161,7 @@ type GameboardElementProps = {
 
 function GameboardElement(props: GameboardElementProps): React.ReactElement {
     const GameboardSlice = useSelector(SelectGameboardSlice);
+    const PreferenceSlice = useSelector(SelectPreferenceSlice);
     const Dispatch = useDispatch();
 
     let cellElements_: Array<HTMLButtonElement>;
@@ -300,6 +302,8 @@ function GameboardElement(props: GameboardElementProps): React.ReactElement {
         const cellElement: HTMLButtonElement = (e.target as HTMLButtonElement).closest(".cell");
         if (cellElement == null) { return; }
 
+        e.preventDefault();
+
         props.setIsContextMenuOpen(false);
 
         RemoveStateFromSingularCellElement(CellState.ready);
@@ -331,12 +335,14 @@ function GameboardElement(props: GameboardElementProps): React.ReactElement {
 
     function OnDocumentMouseMove(e: MouseEvent): void {
         const
-            paddingInPixels: number = 30,
-            top: number = Math.min(Math.max(e.y, paddingInPixels), window.innerHeight - paddingInPixels),
-            left: number = Math.min(Math.max(e.x, paddingInPixels), window.innerWidth - paddingInPixels);
+            PADDING_IN_PIXELS: number = 30,
+            TOP: number = Math.min(Math.max(e.y, PADDING_IN_PIXELS), window.innerHeight - PADDING_IN_PIXELS),
+            LEFT: number = Math.min(Math.max(e.x, PADDING_IN_PIXELS), window.innerWidth - PADDING_IN_PIXELS);
 
-        props.draggedPieceImageElementRef.current.style.top = `${top}px`;
-        props.draggedPieceImageElementRef.current.style.left = `${left}px`;
+        if (props.draggedPieceImageElementRef.current == null) { return; }
+
+        props.draggedPieceImageElementRef.current.style.top = `${TOP}px`;
+        props.draggedPieceImageElementRef.current.style.left = `${LEFT}px`;
     }
 
     function OnDocumentMouseUp(e: MouseEvent): void {
@@ -373,6 +379,12 @@ function GameboardElement(props: GameboardElementProps): React.ReactElement {
         onClick={OnGameboardClick}
         onKeyDown={OnGameboardKeyDown}
         onDragStart={OnGameboardDragStart}
+
+        style={{
+            "--dark-colour": PreferenceSlice.chessTheme.darkColour,
+            "--light-colour": PreferenceSlice.chessTheme.lightColour,
+            "--board-colour": PreferenceSlice.chessTheme.boardColour,
+        } as React.CSSProperties}
     >
         {
             new Array(CHESS_PIECE_COUNT ** 2).fill(null).map((_, i) =>
@@ -425,6 +437,7 @@ function CellElement(props: CellProps): React.ReactElement {
             ].toClassName()}
             ref={cellElementRef}
 
+            draggable
             tabIndex={-1}
             data-index={index}
             data-number={number}
@@ -433,11 +446,13 @@ function CellElement(props: CellProps): React.ReactElement {
             data-original-index={props.index}
         >
             {
-                piece != null &&
-                <img
-                    alt={`${piece.colour}_${piece.piece}_icon`}
-                    src={PIECE_IMAGES[`${piece.colour}_${piece.piece}`]}
-                />
+                (piece != null) &&
+                PIECE_IMAGES[`${piece.colour}_${piece.piece}`]({
+                    className: [
+                        "piece",
+                        `piece-${piece.colour}`,
+                    ].toClassName(),
+                })
             }
         </button>
     );
@@ -445,17 +460,26 @@ function CellElement(props: CellProps): React.ReactElement {
 
 type DraggedPieceElementProps = {
     draggedPiece: ColouredPiece;
-    draggedPieceImageElementRef: React.MutableRefObject<HTMLImageElement>;
+    draggedPieceImageElementRef: React.MutableRefObject<SVGSVGElement>;
 };
 
 function DraggedPieceElement(props: DraggedPieceElementProps): React.ReactNode {
-    return props.draggedPiece != null &&
-        createPortal(
-            <img
-                id="dragged-piece"
-                ref={props.draggedPieceImageElementRef}
+    const PreferenceSlice = useSelector(SelectPreferenceSlice);
 
-                alt={`${props.draggedPiece.colour}_${props.draggedPiece.piece}_icon`}
-                src={PIECE_IMAGES[`${props.draggedPiece.colour}_${props.draggedPiece.piece}`]} />
+    return (props.draggedPiece != null) &&
+        createPortal(
+            PIECE_IMAGES[`${props.draggedPiece.colour}_${props.draggedPiece.piece}`]({
+                id: "dragged-piece",
+                className: [
+                    "piece",
+                    `piece-${props.draggedPiece.colour}`,
+                ].toClassName(),
+                ref: props.draggedPieceImageElementRef,
+
+                style: {
+                    "--dark-colour": PreferenceSlice.chessTheme.darkColour,
+                    "--light-colour": PreferenceSlice.chessTheme.lightColour,
+                } as React.CSSProperties,
+            })
             , document.body);
 }

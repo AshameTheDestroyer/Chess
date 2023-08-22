@@ -13,6 +13,7 @@
     min-height: $size;
 
     padding: $padding;
+    margin-bottom: var(--thickness);
 
     background-color: var(--background-colour);
 
@@ -25,13 +26,13 @@
 
     overflow: hidden;
 
-    &:active {
+    &:is(:active, &-pressed, [disabled]) {
         transform: translateY(var(--thickness));
 
         box-shadow: 0 0 0 var(--background-darker-colour);
     }
 
-    &:hover::before {
+    &:hover:not([disabled], &-pressed)::before {
         content: "";
 
         position: absolute;
@@ -116,6 +117,10 @@
                 right: calc($padding * $icon-padding-ratio);
             }
         }
+    }
+
+    &[disabled] {
+        filter: contrast(75%) brightness(75%);
     }
 
     &>a {

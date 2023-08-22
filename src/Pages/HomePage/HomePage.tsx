@@ -1,17 +1,18 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 
 import useContextMenu from "../../Utilities/Hooks/useContextMenu";
+import useGeneratePieceImages from "../../Hooks/useGeneratePieceImages";
 import CustomButton from "../../Utilities/Components/CustomButton/CustomButton";
 import CustomButtonDisplayer from "../../Utilities/Components/CustomButtonDisplayer/CustomButtonDisplayer";
 import ContextMenu, { ContextMenuGroupWithSelector } from "../../Utilities/Components/ContextMenu/ContextMenu";
 
-import "./Home.scss";
+import "./HomePage.scss";
 
-import PIECE_IMAGES from "../Gameboard/PieceImages";
+import PIECE_IMAGES from "../GameboardPage/PieceImages";
 
 import chess_icon from "../../assets/Icons/chess.svg";
 
-export default function Home(): React.ReactElement {
+export default function HomePage(): React.ReactElement {
     const [
         isContextMenuOpen,
         contextMenuCoordinates,
@@ -20,6 +21,12 @@ export default function Home(): React.ReactElement {
         _setContextMenuCoordinates,
         _setContextMenuClickedElement,
     ] = useContextMenu();
+
+    const displayedPieceImages: Array<string> = useGeneratePieceImages({
+        shuffle: true,
+        alternateColours: true,
+        displayedPieceCount: 4,
+    });
 
     const groups: Array<ContextMenuGroupWithSelector> = [{
         options: [{
@@ -51,17 +58,6 @@ export default function Home(): React.ReactElement {
         }],
     }];
 
-    const [displayedPieceImages, setDisplayedPieceImages] = useState<Array<string>>([]);
-
-    const
-        DISPLAYED_PIECE_COUNT: number = 4,
-        PIECE_IMAGE_NAMES: Array<string> = Object.keys(PIECE_IMAGES);
-
-    useEffect(() => {
-        setDisplayedPieceImages(new Array(DISPLAYED_PIECE_COUNT)
-            .fill(null).map(_item => PIECE_IMAGE_NAMES[~~(Math.random() * PIECE_IMAGE_NAMES.length)]));
-    }, []);
-
     return (
         <main id="home-page">
             <section>
@@ -77,13 +73,21 @@ export default function Home(): React.ReactElement {
 
                 <div id="piece-image-displayer">
                     <figure> {
-                        displayedPieceImages.map((_item, i) =>
-                            <img key={i} src={PIECE_IMAGES[displayedPieceImages[i]]} alt={`${displayedPieceImages[i]}_icon`} />)
+                        displayedPieceImages.map((displayedPieceImage, i) =>
+                            <img
+                                key={i}
+                                className="piece"
+
+                                draggable={false}
+                                alt={`${displayedPieceImage}_icon`}
+                                src={PIECE_IMAGES[displayedPieceImage]}
+                            />
+                        )
                     } </figure>
 
                     <CustomButtonDisplayer>
-                        <CustomButton isArrowed iconPlace="left">Learn More</CustomButton>
-                        <CustomButton isEmphasized link="/Gameboard">Play Now</CustomButton>
+                        <CustomButton link="/Learn">Learn More</CustomButton>
+                        <CustomButton isEmphasized isArrowed iconPlace="right" link="/Gameboard">Play Now</CustomButton>
                     </CustomButtonDisplayer>
                 </div>
             </section>

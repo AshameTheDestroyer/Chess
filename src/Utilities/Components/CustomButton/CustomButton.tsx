@@ -20,10 +20,16 @@ type CustomButtonProps = {
 }, {
     isArrowed: boolean;
     iconPlace: IconPlace;
+}> & EitherOrNeither<{
+    isPressed?: boolean;
+}, {
+    isDisabled?: boolean;
 }> & ComponentProps;
 
 export default function CustomButton(props: CustomButtonProps): React.ReactElement {
     function OnClick(e: React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
+        if (props.isPressed) { return; }
+
         props.events?.onClick?.(e);
 
         if (props.link == null) { return; }
@@ -37,13 +43,16 @@ export default function CustomButton(props: CustomButtonProps): React.ReactEleme
             id={props.id}
             className={[
                 "custom-button",
+
                 props.isArrowed && "custom-button-arrowed",
+                props.isPressed && "custom-button-pressed",
                 props.isEmphasized && "custom-button-emphasized",
                 props.iconURL != null && "custom-button-iconified",
 
                 props.className,
             ].toClassName()}
 
+            disabled={props.isDisabled}
             role={props.role ?? "button"}
             data-icon-place={props.iconPlace}
 
