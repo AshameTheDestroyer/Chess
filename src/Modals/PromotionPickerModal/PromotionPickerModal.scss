@@ -20,8 +20,6 @@
 
     border: 0.2rem solid var(--fore-colour);
 
-    @include index.box-shadow($thickness: 0.5rem, $blurriness: 1rem, $colour: #10f568);
-
     &>button {
         $size: 4rem;
 
@@ -39,7 +37,7 @@
             width: var(--size);
             height: var(--size);
 
-            transition: 500ms width, 500ms height;
+            transition: 300ms width, 300ms height;
         }
 
         &:is(:hover, :focus-within)>svg {

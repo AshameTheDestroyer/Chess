@@ -29,9 +29,9 @@ export const CHESS_THEMES: Array<ChessTheme> = [{
     boardColour: "hsl(0deg, 50%, 15%)",
 }, {
     name: "Golden",
-    darkColour: "hsl(46, 100%, 50%)",
-    lightColour: "hsl(31, 88%, 91%)",
-    boardColour: "hsl(44, 74%, 39%)",
+    darkColour: "hsl(46deg, 100%, 40%)",
+    lightColour: "hsl(46deg, 100%, 75%)",
+    boardColour: "hsl(46deg, 90%, 25%)",
 }, {
     name: "Bits",
     darkColour: "hsl(145deg, 100%, 25%)",
@@ -39,7 +39,7 @@ export const CHESS_THEMES: Array<ChessTheme> = [{
     boardColour: "hsl(145deg, 100%, 10%)",
 }, {
     name: "Grass",
-    darkColour: "hsl(115, 44%, 49%)",
-    lightColour: "hsl(115, 100%, 89%)",
-    boardColour: "hsl(114, 71%, 21%)",
+    darkColour: "hsl(115deg, 45%, 50%)",
+    lightColour: "hsl(115deg, 100%, 90%)",
+    boardColour: "hsl(115deg, 70%, 20%)",
 }];

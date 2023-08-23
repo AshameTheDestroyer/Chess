@@ -80,7 +80,7 @@ $cell-state-colours: #ffd700, #ffd700, #0044ff, #f31818, #10f568, #9b0ba8, #9b0b
                     $cell-state-colour: nth($list: $cell-state-colours, $n: index($list: $cell-states, $value: $cell-state));
 
                     @include emphasize-cell();
-                    @include index.box-shadow($thickness: 0.25rem, $blurriness: 0.75rem, $colour: $cell-state-colour);
+                    @include index.box-shadow($thickness: 0.3rem, $colour: $cell-state-colour);
                 }
             }
 
