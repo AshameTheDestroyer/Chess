@@ -26,7 +26,7 @@ export default function HomePage(): React.ReactElement {
         _setContextMenuClickedElement,
     ] = useContextMenu();
 
-    const displayedPieceImages: Array<string> = useGeneratePieceImages({
+    const [displayedPieceImages, _setDisplayedPieceImages] = useGeneratePieceImages({
         shuffle: true,
         alternateColours: true,
         displayedPieceCount: 4,

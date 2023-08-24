@@ -1,36 +1,4 @@
-.custom-button {
-    $padding: 1rem;
-    $icon-padding-ratio: 0.7;
-    $size: calc(1ch + $padding * 2);
-    --background-colour: hsl(0, 0%, 6%);
-    --background-darker-colour: hsl(0, 0%, 0%);
-    --thickness: 0.5em;
-    --icon-url: url("");
-
-    position: relative;
-
-    min-width: $size;
-    min-height: $size;
-
-    padding: $padding;
-    margin-bottom: var(--thickness);
-
-    background-color: var(--background-colour);
-
-    border-radius: 1.25rem;
-    border: 0.25rem solid var(--background-darker-colour);
-
-    box-shadow: 0 var(--thickness) 0 var(--background-darker-colour);
-
-    transition: transform 200ms, border 200ms, box-shadow 200ms;
-
-    overflow: hidden;
-
-    &:is(:active, &-pressed, [disabled]) {
-        transform: translateY(var(--thickness));
-
-        box-shadow: 0 0 0 var(--background-darker-colour);
-    }
+@mixin hover-shininess($padding: 0%, $icon-padding-ratio: 0) {
 
     &:hover:not([disabled], &-pressed)::before {
         content: "";
@@ -80,6 +48,57 @@
     &:focus-within:not(:active) {
         --background-darker-colour: var(--fore-colour);
     }
+}
+
+@mixin disabling() {
+
+    &[disabled] {
+        filter: contrast(75%) brightness(75%);
+
+        cursor: default;
+    }
+}
+
+@mixin pressing($selector: "") {
+
+    &:is(:active, &-#{$selector}, [disabled]) {
+        transform: translateY(var(--thickness));
+
+        box-shadow: 0 0 0 var(--background-darker-colour);
+    }
+}
+
+.custom-button {
+    $padding: 1rem;
+    $icon-padding-ratio: 0.7;
+    $size: calc(1ch + $padding * 2);
+    --background-colour: hsl(0, 0%, 6%);
+    --background-darker-colour: hsl(0, 0%, 0%);
+    --thickness: 0.5em;
+    --icon-url: url("");
+
+    position: relative;
+
+    min-width: $size;
+    min-height: $size;
+
+    padding: $padding;
+    margin-bottom: var(--thickness);
+
+    background-color: var(--background-colour);
+
+    border-radius: 1.25rem;
+    border: 0.25rem solid var(--background-darker-colour);
+
+    box-shadow: 0 var(--thickness) 0 var(--background-darker-colour);
+
+    transition: transform 200ms, border 200ms, box-shadow 200ms;
+
+    overflow: hidden;
+
+    @include disabling();
+    @include pressing("pressed");
+    @include hover-shininess($padding, $icon-padding-ratio);
 
     &-emphasized {
         --background-colour: var(--main-colour);
@@ -117,10 +136,6 @@
                 right: calc($padding * $icon-padding-ratio);
             }
         }
-    }
-
-    &[disabled] {
-        filter: contrast(75%) brightness(75%);
     }
 
     &>a {

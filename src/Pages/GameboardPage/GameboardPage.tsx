@@ -374,7 +374,9 @@ function GameboardElement(props: GameboardElementProps): React.ReactElement {
 
     return <section
         id="gameboard"
-        key="gameboard"
+        className={[
+            !PreferenceSlice.options.showMovements && "gameboard-without-movements",
+        ].toClassName()}
 
         onClick={OnGameboardClick}
         onKeyDown={OnGameboardKeyDown}
@@ -480,6 +482,5 @@ function DraggedPieceElement(props: DraggedPieceElementProps): React.ReactNode {
                     "--dark-colour": PreferenceSlice.chessTheme.darkColour,
                     "--light-colour": PreferenceSlice.chessTheme.lightColour,
                 } as React.CSSProperties,
-            })
-            , document.body);
+            }), document.body);
 }

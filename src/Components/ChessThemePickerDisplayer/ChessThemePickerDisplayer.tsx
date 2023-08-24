@@ -1,18 +1,20 @@
 import React, { useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch } from "react-redux";
 
 import ChessTheme, { CHESS_THEMES } from "../../Types/ChessTheme";
 import useGeneratePieceImages from "../../Hooks/useGeneratePieceImages";
 import CustomButton from "../../Utilities/Components/CustomButton/CustomButton";
-import { SelectPreferenceSlice, SetChessTheme } from "../../Store/Features/PreferenceSlice/PreferenceSlice";
+import { SetChessTheme } from "../../Store/Features/PreferenceSlice/PreferenceSlice";
 
 import "./ChessThemePickerDisplayer.scss";
 
 import PIECE_IMAGES from "../../Pages/GameboardPage/PieceImages";
 
-export default function ChessThemePickerDisplayer(): React.ReactElement {
-    const PreferenceSlice = useSelector(SelectPreferenceSlice);
+type ChessThemePickerDisplayerProps = {
+    selectedChessTheme: ChessTheme;
+};
 
+export default function ChessThemePickerDisplayer(props: ChessThemePickerDisplayerProps): React.ReactElement {
     return (
         <section id="chess-theme-picker-section">
             <h1>Chess Theme</h1>
@@ -23,7 +25,7 @@ export default function ChessThemePickerDisplayer(): React.ReactElement {
                         key={i}
 
                         {...chessTheme}
-                        isEquipped={chessTheme.name == PreferenceSlice.chessTheme.name}
+                        isEquipped={chessTheme.name == props.selectedChessTheme.name}
                     />
                 )
             } </div>
@@ -38,13 +40,18 @@ type ChessThemePickerProps = {
 function ChessThemePicker(props: ChessThemePickerProps): React.ReactElement {
     const Dispatch = useDispatch();
 
-    const displayedPieceImages: Array<string> = useGeneratePieceImages({
+    const [displayedPieceImages, setDisplayedPieceImages] = useGeneratePieceImages({
         displayedPieceCount: 4,
         alternateColours: true,
     });
 
     useEffect(() => {
-        [displayedPieceImages[0], displayedPieceImages[1]] = [displayedPieceImages[1], displayedPieceImages[0]];
+        setDisplayedPieceImages(previousValue => {
+            const displayedPieceImages: Array<string> = [...previousValue];
+            [displayedPieceImages[0], displayedPieceImages[1]] = [displayedPieceImages[1], displayedPieceImages[0]];
+
+            return displayedPieceImages;
+        });
     }, []);
 
     return (
@@ -67,7 +74,7 @@ function ChessThemePicker(props: ChessThemePickerProps): React.ReactElement {
                 displayedPieceImages.map((displayedPieceImage, i) =>
                     <div key={i} className="cell">
                         {
-                            (PIECE_IMAGES[displayedPieceImage] as React.FunctionComponent<React.SVGProps<SVGSVGElement> & { title?: string }>)({
+                            (PIECE_IMAGES[displayedPieceImage] as React.FunctionComponent<React.SVGProps<SVGSVGElement> & { title?: string }>)?.({
                                 className: [
                                     "piece",
                                     `piece-${displayedPieceImage.split("_")[0]}`,

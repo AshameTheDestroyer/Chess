@@ -39,6 +39,17 @@ $cell-state-colours: #ffd700, #ffd700, #0044ff, #f31818, #10f568, #9b0ba8, #9b0b
 
         border: 0.2rem solid var(--light-colour);
 
+        &.gameboard-without-movements {
+
+            .cell {
+                box-shadow: none !important;
+
+                &:not(:hover, :focus-within) {
+                    transform: scale(1) !important;
+                }
+            }
+        }
+
         .cell {
             position: relative;
 

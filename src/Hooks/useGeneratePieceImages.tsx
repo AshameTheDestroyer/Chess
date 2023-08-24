@@ -9,7 +9,8 @@ type useGeneratePieceImagesProps = {
     displayedPieceCount: number;
 };
 
-function useGeneratePieceImages(props: useGeneratePieceImagesProps): Array<`${PieceColour}_${Piece}`> {
+function useGeneratePieceImages(props: useGeneratePieceImagesProps):
+    [Array<string>, React.Dispatch<React.SetStateAction<Array<string>>>] {
     const [displayedPieceImages, setDisplayedPieceImages] = useState<Array<`${PieceColour}_${Piece}`>>([]);
 
     const
@@ -28,7 +29,7 @@ function useGeneratePieceImages(props: useGeneratePieceImagesProps): Array<`${Pi
         });
     }, []);
 
-    return displayedPieceImages;
+    return [displayedPieceImages, setDisplayedPieceImages];
 }
 
 export default useGeneratePieceImages;

@@ -26,7 +26,7 @@ function Index(): React.ReactElement {
     }, []);
 
     return (
-        <HashRouter /*basename={window.location.pathname || ""}*/ >
+        <HashRouter>
             <Header />
             <Provider store={Store}>
                 <Routes>

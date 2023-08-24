@@ -1,5 +1,15 @@
 #preferences-page {
     --padding: 2rem;
 
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+
     padding: var(--padding);
+
+    &>section {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+    }
 }

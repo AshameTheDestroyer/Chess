@@ -4,12 +4,20 @@ import { Store } from "../../Store";
 import ChessTheme, { CHESS_THEMES } from "../../../Types/ChessTheme";
 import { GetFromLocalStorage, SetInLocalStorage } from "../../../Utilities/Functions/HandleLocalStorage";
 
+export type PreferenceOptions = {
+    showMovements: boolean;
+};
+
 type PreferenceSliceType = {
     chessTheme: ChessTheme;
+    options: PreferenceOptions;
 };
 
 const INITIAL_STATE: PreferenceSliceType = {
     chessTheme: GetFromLocalStorage("preference-chess-theme") ?? CHESS_THEMES[0],
+    options: GetFromLocalStorage("preference-options") ?? {
+        showMovements: true,
+    },
 };
 
 export const PreferenceSlice = createSlice({
@@ -21,6 +29,11 @@ export const PreferenceSlice = createSlice({
             state.chessTheme = action.payload;
             SetInLocalStorage("preference-chess-theme", action.payload);
         },
+
+        SetOptions: (state: PreferenceSliceType, action: PayloadAction<PreferenceOptions>): void => {
+            state.options = action.payload;
+            SetInLocalStorage("preference-options", action.payload);
+        },
     },
 });
 
@@ -30,5 +43,6 @@ export const SelectPreferenceSlice = (state: typeof Store): PreferenceSliceType 
 export const PreferenceSliceReducer = PreferenceSlice.reducer;
 
 export const {
+    SetOptions,
     SetChessTheme,
 } = PreferenceSlice.actions;
