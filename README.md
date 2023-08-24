@@ -56,6 +56,14 @@ Today we're not making any tedious Chess Game, no baby today we're making A WHOL
    * Crimson.
    * Golden.
    * Bits.
+   * Frostburn.
+   * Royal.
    * Grass.
+   * Nightfall.
+   * Pharanoic.
+   * Aquatic.
+   * Pinky.
+   * Evil.
 3. Finally, it uses Local Storage to save these changes and preferences.
 4. An additional edit has been required, is that all pieces are now rendered as SVGs, not regular images, so that it can be used to change its fill and stroke colours.
+5. Options menu added too to the Preference Page, which currently only contains one button, that can either enable or disable the movements shown whenever a piece is selected/moved.
