@@ -1,63 +1,78 @@
 import Cell from "../Types/Cell";
 import { Piece } from "../Types/Piece";
+import CellState from "../Types/CellState";
 import PieceMovement from "../Types/PieceMovements";
 import Coordinates from "../Utilities/Types/Coordinates";
 import { CHESS_PIECE_COUNT } from "./GenerateEmptyGameboard";
-import CellState, { AddCellState } from "../Types/CellState";
 import AddPieceMovementToPieceCoordinates from "./AddPieceMovementToPieceCoordinates";
+import CheckOccurrence from "../Types/CheckOccurrence";
 
 type EvaluatePieceMovementsProps = {
     cells: Array<Array<Cell>>;
     pieceMovement: PieceMovement;
-    pieceCoordinates: Coordinates;
-};
+    checkOccurrence: CheckOccurrence;
+} & Coordinates;
 
-function EvaluatePieceMovement(props: EvaluatePieceMovementsProps): boolean {
+export type EvaluatePieceMovementOutputProps = {
+    cellState?: CellState;
+    movementIsExtendible: boolean;
+} & Partial<Coordinates>;
+
+function EvaluatePieceMovement(props: EvaluatePieceMovementsProps): EvaluatePieceMovementOutputProps {
     const
-        { x, y }: Coordinates = props.pieceCoordinates,
+        { x, y }: Coordinates = props,
         { x: x0, y: y0 }: Coordinates = AddPieceMovementToPieceCoordinates(props.cells[x][y], props.pieceMovement);
 
     let cellExists: boolean = props.cells[x0]?.[y0] != null;
-    if (!cellExists) { return false; }
+    if (!cellExists) { return { movementIsExtendible: false }; }
 
     let cellHasPiece: boolean = props.cells[x0][y0].colouredPiece != null,
         cellHasFoePiece: boolean = cellHasPiece && props.cells[x0][y0].colouredPiece.colour != props.cells[x][y].colouredPiece.colour,
         pieceIsWhite: boolean = props.cells[x][y].colouredPiece.colour == "white";
 
-    if (cellHasPiece && !cellHasFoePiece) { return false; }
+    if (cellHasPiece && !cellHasFoePiece) { return { movementIsExtendible: false }; }
 
     if (!EvaluateMovePieceMovement({
         cellHasFoePiece,
         pieceMovement: props.pieceMovement,
-    })) { return false; }
+    })) { return { movementIsExtendible: false }; }
 
     if (!EvaluateAttackPieceMovement({
         cellHasFoePiece,
         pieceMovement: props.pieceMovement,
-    })) { return false; }
+    })) { return { movementIsExtendible: false }; }
 
     if (!EvaluateFirstMovePieceMovement({
         pieceIsWhite,
         pieceCell: props.cells[x][y],
         pieceMovement: props.pieceMovement,
-    })) { return false; }
+    })) { return { movementIsExtendible: false }; }
 
     if (!EvaluateCastlablePieceMovement({
         pieceIsWhite,
         cells: props.cells,
         pieceCell: props.cells[x][y],
         pieceMovement: props.pieceMovement,
-    })) { return false; }
+    })) { return { movementIsExtendible: false }; }
 
     if (!EvaluateSneakPieceMovement({
         pieceIsWhite,
         cells: props.cells,
         pieceMovement: props.pieceMovement,
         pieceMovementCoordinates: { x: x0, y: y0 },
-    })) { return false; }
+    })) { return { movementIsExtendible: false }; }
+
+    if (props.checkOccurrence != null) {
+        const { kingCell: checkedKingCell, threateningCell } = props.checkOccurrence;
+        console.log(JSON.parse(JSON.stringify(props.checkOccurrence)));
+
+        let checkedKingIsFoe: boolean = checkedKingCell.colouredPiece.colour != props.cells[x][y].colouredPiece.colour;
+        if (!checkedKingIsFoe) {
+
+        }
+    }
 
     let cellIsLastCell: boolean = (pieceIsWhite) ? y0 == CHESS_PIECE_COUNT - 1 : y0 == 0;
-
     const cellState: CellState = ((): CellState => {
         if (props.pieceMovement.isSneakAttack) return CellState.sneak;
         if (props.pieceMovement.isCastlable) return CellState.castle;
@@ -66,9 +81,12 @@ function EvaluatePieceMovement(props: EvaluatePieceMovementsProps): boolean {
         return CellState.move;
     })();
 
-    props.cells[x0][y0].state = AddCellState(props.cells[x0][y0].state, cellState);
-
-    return !cellHasFoePiece;
+    return {
+        x: x0,
+        y: y0,
+        cellState,
+        movementIsExtendible: !cellHasFoePiece,
+    };
 }
 
 export default EvaluatePieceMovement;

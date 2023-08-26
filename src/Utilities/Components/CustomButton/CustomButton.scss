@@ -106,7 +106,7 @@
     }
 
     &-arrowed {
-        --icon-url: url("./Icons/arrow_thin.svg") !important;
+        --icon-url: url("/src/Utilities/Components/CustomButton/Icons/arrow_thin.svg") !important;
 
         &[data-icon-place="left"]::after {
             transform: translateY(-50%) rotate(180deg);

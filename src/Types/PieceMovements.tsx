@@ -16,7 +16,16 @@ type PieceMovement = {
 
 export default PieceMovement;
 
-export function GeneratePieceMovements(piece: Piece): Array<PieceMovement | Array<PieceMovement>> {
+export type PieceMovements = Array<PieceMovement | Array<PieceMovement>>;
+
+export const AllPieceMovements: Map<Piece, PieceMovements> = (() => {
+    const map = new Map<Piece, PieceMovements>();
+    Object.keys(Piece).forEach(piece => map.set(Piece[piece], GeneratePieceMovements(Piece[piece])));
+
+    return map;
+})();
+
+export function GeneratePieceMovements(piece: Piece): PieceMovements {
     switch (piece) {
         case "pawn": return GeneratePawnMovements();
         case "knight": return GenerateKnightMovements();
@@ -27,7 +36,7 @@ export function GeneratePieceMovements(piece: Piece): Array<PieceMovement | Arra
     }
 }
 
-function GeneratePawnMovements(): Array<PieceMovement | Array<PieceMovement>> {
+function GeneratePawnMovements(): PieceMovements {
     return [
         [
             { x: 0, y: 1, isMoveOnly: true, isPromotable: true },
@@ -40,8 +49,8 @@ function GeneratePawnMovements(): Array<PieceMovement | Array<PieceMovement>> {
     ];
 }
 
-function GenerateKnightMovements(): Array<PieceMovement | Array<PieceMovement>> {
-    const movements: Array<PieceMovement | Array<PieceMovement>> = [];
+function GenerateKnightMovements(): PieceMovements {
+    const movements: PieceMovements = [];
 
     for (let i: number = -1; i <= 1; i += 2) {
         for (let j: number = -1; j <= 1; j += 2) {
@@ -53,7 +62,7 @@ function GenerateKnightMovements(): Array<PieceMovement | Array<PieceMovement>> 
     return movements;
 }
 
-function GenerateBishopMovements(): Array<PieceMovement | Array<PieceMovement>> {
+function GenerateBishopMovements(): PieceMovements {
     const
         topLeftMovements: Array<PieceMovement> = [],
         topRightMovements: Array<PieceMovement> = [],
@@ -70,7 +79,7 @@ function GenerateBishopMovements(): Array<PieceMovement | Array<PieceMovement>> 
     return [topLeftMovements, topRightMovements, bottomLeftMovements, bottomRightMovements];
 }
 
-function GenerateRookMovements(): Array<PieceMovement | Array<PieceMovement>> {
+function GenerateRookMovements(): PieceMovements {
     const
         topMovements: Array<PieceMovement> = [],
         leftMovements: Array<PieceMovement> = [],
@@ -87,12 +96,12 @@ function GenerateRookMovements(): Array<PieceMovement | Array<PieceMovement>> {
     return [topMovements, leftMovements, rightMovements, bottomMovements];
 }
 
-function GenerateQueenMovements(): Array<PieceMovement | Array<PieceMovement>> {
+function GenerateQueenMovements(): PieceMovements {
     return [...GenerateBishopMovements(), ...GenerateRookMovements()];
 }
 
-function GenerateKingMovements(): Array<PieceMovement | Array<PieceMovement>> {
-    const movements: Array<PieceMovement | Array<PieceMovement>> = [];
+function GenerateKingMovements(): PieceMovements {
+    const movements: PieceMovements = [];
 
     for (let i: number = -1; i <= 1; i += 2) {
         movements.push([{ x: i, y: 0 }, { x: i * 2, y: 0, isCastlable: true }]);
