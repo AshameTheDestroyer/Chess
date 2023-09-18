@@ -67,3 +67,12 @@ Today we're not making any tedious Chess Game, no baby today we're making A WHOL
 3. Finally, it uses Local Storage to save these changes and preferences.
 4. An additional edit has been required, is that all pieces are now rendered as SVGs, not regular images, so that it can be used to change its fill and stroke colours.
 5. Options menu added too to the Preference Page, which currently only contains one button, that can either enable or disable the movements shown whenever a piece is selected/moved.
+
+### Checkmating:
+1. As the name simply suggests, we can now, check, checkmate, or draw, our opponents, and it was so damn hard to implement.
+2. Kings now check for threatening foe pieces, whenever a piece is moved, then be checked if they're actually at the fire line.
+3. A piece can no longer move when a check occurrence exists, unless they can benifit their king.
+4. Also a piece can no longer move, if it's pinned by a foe piece, such that its movement can throw the king in danger.
+5. Kings can no longer move unless it was a safe spot.
+6. Also kings cannot interfere with any cell that's been territorilized by anyone else than them, thus no king can stick to another king's back.
+7. Currently a checkmate or a draw only triggers an alert, but that'll be implemented later on.
