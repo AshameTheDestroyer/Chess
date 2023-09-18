@@ -5,7 +5,8 @@ import ChessTheme, { CHESS_THEMES } from "../../../Types/ChessTheme";
 import { GetFromLocalStorage, SetInLocalStorage } from "../../../Utilities/Functions/HandleLocalStorage";
 
 export type PreferenceOptions = {
-    showMovements: boolean;
+    showHintMovements: boolean;
+    showPlayedMovements: boolean;
 };
 
 type PreferenceSliceType = {
@@ -16,7 +17,8 @@ type PreferenceSliceType = {
 const INITIAL_STATE: PreferenceSliceType = {
     chessTheme: GetFromLocalStorage("preference-chess-theme") ?? CHESS_THEMES[0],
     options: GetFromLocalStorage("preference-options") ?? {
-        showMovements: true,
+        showHintMovements: true,
+        showPlayedMovements: true,
     },
 };
 

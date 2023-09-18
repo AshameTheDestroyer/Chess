@@ -169,8 +169,11 @@ function GameboardElement(props: GameboardElementProps): React.ReactElement {
         (): Array<HTMLButtonElement> => (cellElements_ ??= Array.from(document.querySelectorAll(".cell")));
 
     function OnGameboardKeyDown(e: React.KeyboardEvent<HTMLElement>): void {
-        const cellElement: HTMLButtonElement = (e.target as HTMLButtonElement).closest(".cell");
-        if (cellElement == null) { return; }
+        const cellElement: HTMLButtonElement =
+            e.currentTarget.querySelector(".cell.selected-cell") ??
+            e.currentTarget.querySelector(".cell.ready-cell") ??
+            e.currentTarget.querySelector(".cell.playedTo-cell") ??
+            e.currentTarget.querySelector(".cell[data-coordinates='4,3']");
 
         if (props.draggedCell != null) { ResetDragging(); }
 
@@ -372,40 +375,44 @@ function GameboardElement(props: GameboardElementProps): React.ReactElement {
             .reduce((previous, current) => previous + (current ?? 0), 0);
     }
 
-    return <section
-        id="gameboard"
-        className={[
-            !PreferenceSlice.options.showMovements && "gameboard-without-movements",
-        ].toClassName()}
+    return (
+        <section
+            id="gameboard"
+            className={[
+                !PreferenceSlice.options.showHintMovements && "gameboard-without-hint-movements",
+                !PreferenceSlice.options.showPlayedMovements && "gameboard-without-played-movements",
+            ].toClassName()}
 
-        onClick={OnGameboardClick}
-        onKeyDown={OnGameboardKeyDown}
-        onDragStart={OnGameboardDragStart}
+            onClick={OnGameboardClick}
+            onKeyDown={OnGameboardKeyDown}
+            onDragStart={OnGameboardDragStart}
+            tabIndex={(props.readyToPromoteCell == null) ? 0 : -1}
 
-        style={{
-            "--dark-colour": PreferenceSlice.chessTheme.darkColour,
-            "--light-colour": PreferenceSlice.chessTheme.lightColour,
-            "--board-colour": PreferenceSlice.chessTheme.boardColour,
-        } as React.CSSProperties}
-    >
-        {
-            new Array(CHESS_PIECE_COUNT ** 2).fill(null).map((_, i) =>
-                <CellElement
-                    key={i}
+            style={{
+                "--dark-colour": PreferenceSlice.chessTheme.darkColour,
+                "--light-colour": PreferenceSlice.chessTheme.lightColour,
+                "--board-colour": PreferenceSlice.chessTheme.boardColour,
+            } as React.CSSProperties}
+        >
+            {
+                new Array(CHESS_PIECE_COUNT ** 2).fill(null).map((_, i) =>
+                    <CellElement
+                        key={i}
 
-                    index={i}
-                    draggedCell={props.draggedCell}
-                />
-            )
-        }
+                        index={i}
+                        draggedCell={props.draggedCell}
+                    />
+                )
+            }
 
-        <PromotionPickerModal
-            isOpen={props.readyToPromoteCell != null}
-            readyToPromoteCell={props.readyToPromoteCell}
+            <PromotionPickerModal
+                isOpen={props.readyToPromoteCell != null}
+                readyToPromoteCell={props.readyToPromoteCell}
 
-            setIsOpen={value => props.setReadyToPromoteCell((value) ? props.readyToPromoteCell : null)}
-        />
-    </section>;
+                setIsOpen={value => props.setReadyToPromoteCell((value) ? props.readyToPromoteCell : null)}
+            />
+        </section>
+    );
 }
 
 type CellProps = {
@@ -429,6 +436,7 @@ function CellElement(props: CellProps): React.ReactElement {
             className={[
                 "cell",
                 (piece != null) && "cell-with-piece",
+                // (cell.territorializedKingColours != null) && `$territorialized-cell`,
                 (props.draggedCell?.x == x && props.draggedCell?.y == y) && "dragged-cell",
 
                 ...Object.entries(CellState)
@@ -446,6 +454,7 @@ function CellElement(props: CellProps): React.ReactElement {
             data-character={character}
             data-coordinates={`${x},${y}`}
             data-original-index={props.index}
+        // territorialized-king-colours={cell.territorializedKingColours?.length}
         >
             {
                 (piece != null) &&

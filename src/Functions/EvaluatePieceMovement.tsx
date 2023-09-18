@@ -1,87 +1,107 @@
 import Cell from "../Types/Cell";
 import { Piece } from "../Types/Piece";
-import CellState from "../Types/CellState";
+import CheckThreats from "./CheckThreats";
+import CellState, { DoCellStatesIntersect } from "../Types/CellState";
 import PieceMovement from "../Types/PieceMovements";
+import CheckOccurrence from "../Types/CheckOccurrence";
 import Coordinates from "../Utilities/Types/Coordinates";
 import { CHESS_PIECE_COUNT } from "./GenerateEmptyGameboard";
 import AddPieceMovementToPieceCoordinates from "./AddPieceMovementToPieceCoordinates";
-import CheckOccurrence from "../Types/CheckOccurrence";
 
 type EvaluatePieceMovementsProps = {
     cells: Array<Array<Cell>>;
     pieceMovement: PieceMovement;
     checkOccurrence: CheckOccurrence;
+    pieceMovementLine?: Array<PieceMovement>;
+    preferredArguments?: {
+        cell: Cell;
+    };
 } & Coordinates;
 
 export type EvaluatePieceMovementOutputProps = {
     cellState?: CellState;
+    pieceMovement: PieceMovement;
     movementIsExtendible: boolean;
+    pieceMovementLine?: Array<PieceMovement>;
 } & Partial<Coordinates>;
 
 function EvaluatePieceMovement(props: EvaluatePieceMovementsProps): EvaluatePieceMovementOutputProps {
     const
-        { x, y }: Coordinates = props,
-        { x: x0, y: y0 }: Coordinates = AddPieceMovementToPieceCoordinates(props.cells[x][y], props.pieceMovement);
+        cell: Cell = props.preferredArguments?.cell ?? props.cells[props.x][props.y],
+        { x: x0, y: y0 }: Coordinates = AddPieceMovementToPieceCoordinates(cell, props.pieceMovement),
+        pieceMovementEvaluationOnFailed: EvaluatePieceMovementOutputProps = { ...props, movementIsExtendible: false };
 
     let cellExists: boolean = props.cells[x0]?.[y0] != null;
-    if (!cellExists) { return { movementIsExtendible: false }; }
+    if (!cellExists) { return pieceMovementEvaluationOnFailed; }
 
     let cellHasPiece: boolean = props.cells[x0][y0].colouredPiece != null,
-        cellHasFoePiece: boolean = cellHasPiece && props.cells[x0][y0].colouredPiece.colour != props.cells[x][y].colouredPiece.colour,
-        pieceIsWhite: boolean = props.cells[x][y].colouredPiece.colour == "white";
+        cellHasFoePiece: boolean = cellHasPiece && props.cells[x0][y0].colouredPiece.colour != cell.colouredPiece.colour,
+        pieceIsWhite: boolean = cell.colouredPiece.colour == "white",
+        canCanPromote: boolean = (pieceIsWhite) ? y0 == CHESS_PIECE_COUNT - 1 : y0 == 0;
 
-    if (cellHasPiece && !cellHasFoePiece) { return { movementIsExtendible: false }; }
+    if (cellHasPiece && !cellHasFoePiece) { return pieceMovementEvaluationOnFailed; }
 
     if (!EvaluateMovePieceMovement({
         cellHasFoePiece,
         pieceMovement: props.pieceMovement,
-    })) { return { movementIsExtendible: false }; }
+    })) { return pieceMovementEvaluationOnFailed; }
 
     if (!EvaluateAttackPieceMovement({
         cellHasFoePiece,
         pieceMovement: props.pieceMovement,
-    })) { return { movementIsExtendible: false }; }
+    })) { return pieceMovementEvaluationOnFailed; }
 
     if (!EvaluateFirstMovePieceMovement({
         pieceIsWhite,
-        pieceCell: props.cells[x][y],
+        pieceCell: cell,
         pieceMovement: props.pieceMovement,
-    })) { return { movementIsExtendible: false }; }
+    })) { return pieceMovementEvaluationOnFailed; }
 
     if (!EvaluateCastlablePieceMovement({
         pieceIsWhite,
         cells: props.cells,
-        pieceCell: props.cells[x][y],
+        pieceCell: cell,
         pieceMovement: props.pieceMovement,
-    })) { return { movementIsExtendible: false }; }
+        checkOccurrence: props.checkOccurrence,
+    })) { return pieceMovementEvaluationOnFailed; }
 
     if (!EvaluateSneakPieceMovement({
+        cell,
         pieceIsWhite,
         cells: props.cells,
         pieceMovement: props.pieceMovement,
         pieceMovementCoordinates: { x: x0, y: y0 },
-    })) { return { movementIsExtendible: false }; }
+    })) { return pieceMovementEvaluationOnFailed; }
 
-    if (props.checkOccurrence != null) {
-        const { kingCell: checkedKingCell, threateningCell } = props.checkOccurrence;
-        console.log(JSON.parse(JSON.stringify(props.checkOccurrence)));
+    if (!EvaluateCheckDefendingMovement({
+        cell,
+        cells: props.cells,
+        checkOccurrence: props.checkOccurrence,
+        pieceMovementCoordinates: { x: x0, y: y0 },
+    })) { return { ...props, movementIsExtendible: true }; }
 
-        let checkedKingIsFoe: boolean = checkedKingCell.colouredPiece.colour != props.cells[x][y].colouredPiece.colour;
-        if (!checkedKingIsFoe) {
+    if (!EvaluateKingSafeMovementProps({
+        cell,
+        cells: props.cells,
+        pieceMovementCoordinates: { x: x0, y: y0 },
+    })) { return pieceMovementEvaluationOnFailed; }
 
-        }
-    }
+    if (!EvaluatePinViolatingMovement({
+        cell,
+        cells: props.cells,
+        pieceMovementCoordinates: { x: x0, y: y0 },
+    })) { return pieceMovementEvaluationOnFailed; }
 
-    let cellIsLastCell: boolean = (pieceIsWhite) ? y0 == CHESS_PIECE_COUNT - 1 : y0 == 0;
     const cellState: CellState = ((): CellState => {
         if (props.pieceMovement.isSneakAttack) return CellState.sneak;
         if (props.pieceMovement.isCastlable) return CellState.castle;
-        if (cellIsLastCell && props.pieceMovement.isPromotable) return CellState.promote;
+        if (canCanPromote && props.pieceMovement.isPromotable) return CellState.promote;
         if (cellHasFoePiece) return CellState.attack;
         return CellState.move;
     })();
 
     return {
+        ...props,
         x: x0,
         y: y0,
         cellState,
@@ -131,12 +151,14 @@ type EvaluateCastlablePieceMovementProps = {
     pieceIsWhite: boolean;
     cells: Array<Array<Cell>>;
     pieceMovement: PieceMovement;
+    checkOccurrence: CheckOccurrence;
 };
 
 function EvaluateCastlablePieceMovement(props: EvaluateCastlablePieceMovementProps): boolean {
     let pieceIsKing: boolean = props.pieceCell.colouredPiece.piece == Piece.king;
 
     if (!pieceIsKing || !props.pieceMovement.isCastlable) { return true; }
+    if (props.checkOccurrence != null) { return false; }
 
     const { leftRookCell, rightRookCell } =
         FindKingRookCells({ cells: props.cells, kingCell: props.pieceCell });
@@ -153,6 +175,7 @@ function EvaluateCastlablePieceMovement(props: EvaluateCastlablePieceMovementPro
 }
 
 type EvaluateSneakPieceMovementProps = {
+    cell: Cell;
     pieceIsWhite: boolean;
     cells: Array<Array<Cell>>;
     pieceMovement: PieceMovement;
@@ -162,13 +185,111 @@ type EvaluateSneakPieceMovementProps = {
 function EvaluateSneakPieceMovement(props: EvaluateSneakPieceMovementProps): boolean {
     if (!props.pieceMovement.isSneakAttack) { return true; }
 
-    const { x: x0, y: y0 }: Coordinates = props.pieceMovementCoordinates;
+    const
+        { x: x0, y: y0 }: Coordinates = props.pieceMovementCoordinates,
+        foePawnCell: Cell = props.cells[x0][(props.pieceIsWhite) ? y0 - 1 : y0 + 1];
 
-    let pawnToSneakUponExists: boolean =
-        props.cells[x0][(props.pieceIsWhite) ? y0 - 1 : y0 + 1].colouredPiece?.canBeSnuckUpon,
+    let pawnToSneakUponExists: boolean = foePawnCell.colouredPiece?.canBeSnuckUpon,
+        isPawnFoe: boolean = foePawnCell.colouredPiece?.colour != props.cell.colouredPiece.colour,
         cellIsEmpty: boolean = props.cells[x0][y0].colouredPiece == null;
 
-    return pawnToSneakUponExists && cellIsEmpty;
+    return pawnToSneakUponExists && isPawnFoe && cellIsEmpty;
+}
+
+type EvaluateCheckDefendingMovementProps = {
+    cell: Cell;
+    cells: Array<Array<Cell>>;
+    checkOccurrence: CheckOccurrence;
+    pieceMovementCoordinates: Coordinates;
+};
+
+function EvaluateCheckDefendingMovement(props: EvaluateCheckDefendingMovementProps): boolean {
+    if (props.checkOccurrence == null) { return true; }
+
+    const
+        { x: x0, y: y0 }: Coordinates = props.pieceMovementCoordinates,
+        { kingCell: checkedKingCell, threateningCellLines } = props.checkOccurrence;
+
+    let checkedKingIsFoe: boolean = checkedKingCell.colouredPiece.colour != props.cell.colouredPiece.colour,
+        pieceIsKing: boolean = props.cell.colouredPiece.piece == Piece.king,
+        isDoubleCheck: boolean = threateningCellLines.length >= 2;
+
+    if (checkedKingIsFoe) { return true; }
+    if (isDoubleCheck) { return pieceIsKing; }
+
+    const
+        threateningCellLine: Array<Cell> = threateningCellLines[0],
+        threateningCell: Cell = threateningCellLine[0],
+        cutThreateningCellLine: Array<Cell> = threateningCellLine.slice(0, threateningCellLine
+            .indexOf(threateningCellLine.find(cell => cell.colouredPiece?.piece == Piece.king)));
+
+    let canDefendKing: boolean = cutThreateningCellLine.find(cell => cell.x == x0 && cell.y == y0) != null,
+        canAttackThreateningPiece: boolean = threateningCell.x == x0 && threateningCell.y == y0,
+        pieceCanMove: boolean = !pieceIsKing && (canAttackThreateningPiece || canDefendKing),
+        kingCanEscape: boolean = threateningCellLine.find(cell => cell.x == x0 && cell.y == y0) == null,
+        kingCanMove: boolean = pieceIsKing && (canAttackThreateningPiece || kingCanEscape);
+
+    return pieceCanMove || kingCanMove;
+}
+
+type EvaluateKingSafeMovementPropsType = {
+    cell: Cell;
+    cells: Array<Array<Cell>>;
+    pieceMovementCoordinates: Coordinates;
+};
+
+function EvaluateKingSafeMovementProps(props: EvaluateKingSafeMovementPropsType): boolean {
+    const { x: x0, y: y0 }: Coordinates = props.pieceMovementCoordinates;
+
+    let pieceIsKing: boolean = props.cell.colouredPiece.piece == Piece.king,
+        cellIsTerritorializedByFoe: boolean = props.cells[x0][y0].territorializedKingColours?.length > 1,
+        movementIsAttack: boolean = DoCellStatesIntersect(props.cells[x0][y0].state, CellState.attack),
+        kingIsReadyOrChecked: boolean =
+            DoCellStatesIntersect(props.cell.state, CellState.ready) ||
+            DoCellStatesIntersect(props.cell.state, CellState.checked);
+
+    if (!pieceIsKing || movementIsAttack || !kingIsReadyOrChecked) { return true; }
+
+    const threateningCellLines: Array<Array<Cell>> = CheckThreats({
+        ...props,
+        kingCell: {
+            ...props.cell,
+            x: x0,
+            y: y0,
+            state: null,
+        },
+    });
+
+    let kingShouldBeSafe: boolean = threateningCellLines.length == 0;
+    return kingShouldBeSafe && !cellIsTerritorializedByFoe;
+}
+
+type EvaluatePinViolatingMovementProps = {
+    cell: Cell;
+    cells: Array<Array<Cell>>;
+    pieceMovementCoordinates: Coordinates;
+};
+
+function EvaluatePinViolatingMovement(props: EvaluatePinViolatingMovementProps): boolean {
+    const { x: x0, y: y0 }: Coordinates = props.pieceMovementCoordinates;
+
+    let pieceIsKing: boolean = props.cell.colouredPiece.piece == Piece.king;
+    if (pieceIsKing) { return true; }
+
+    const kingCell: Cell = props.cells.flat().find(cell =>
+        cell.colouredPiece?.piece == Piece.king &&
+        cell.colouredPiece?.colour == props.cell.colouredPiece.colour),
+        threateningCellLines: Array<Array<Cell>> = CheckThreats({
+            kingCell,
+            cells: props.cells.map(cellRow => cellRow.map(cell => (cell.x != props.cell.x || cell.y != props.cell.y) ?
+                cell : { ...props.cell, state: cell.state, colouredPiece: null })),
+        }),
+        threateningCellLine: Array<Cell> = threateningCellLines[0];
+
+    let moveThreatensKing: boolean = threateningCellLine?.find(cell => cell.x == x0 && cell.y == y0) == null,
+        pieceIsPinned: boolean = threateningCellLine?.find(cell => cell.x == props.cell.x && cell.y == props.cell.y) != null;
+
+    return !moveThreatensKing || !pieceIsPinned;
 }
 
 type FindKingRookCellsProps = {

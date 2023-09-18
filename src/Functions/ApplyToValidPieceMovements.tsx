@@ -1,42 +1,74 @@
 import Cell from "../Types/Cell";
 import CheckOccurrence from "../Types/CheckOccurrence";
-import { PieceMovements } from "../Types/PieceMovements";
 import Coordinates from "../Utilities/Types/Coordinates";
+import PieceMovement, { PieceMovements } from "../Types/PieceMovements";
 import EvaluatePieceMovement, { EvaluatePieceMovementOutputProps } from "./EvaluatePieceMovement";
 
-type ApplyToValidPieceMovementsProps = {
+type ApplyToPieceValidMovementsProps = {
     cells: Array<Array<Cell>>;
     pieceMovements: PieceMovements;
     checkOccurrence: CheckOccurrence;
+    preferredArguments?: {
+        cell: Cell;
+    };
 
-    callbackFunction: (props: EvaluatePieceMovementOutputProps) => void;
+    callback: (props: EvaluatePieceMovementOutputProps) => void;
 } & Coordinates;
 
-function ApplyToValidPieceMovements(props: ApplyToValidPieceMovementsProps): void {
+function ApplyToPieceValidMovements(props: ApplyToPieceValidMovementsProps): void {
     props.pieceMovements.forEach(pieceMovement => {
-        if (!(pieceMovement instanceof Array)) {
+        let pieceMovementIsArray: boolean = pieceMovement instanceof Array;
+        if (!pieceMovementIsArray) {
             const evaluationProps: EvaluatePieceMovementOutputProps = EvaluatePieceMovement({
                 ...props,
-                pieceMovement,
                 cells: props.cells,
+                preferredArguments: props.preferredArguments,
+                pieceMovement: pieceMovement as PieceMovement,
             });
 
-            props.callbackFunction(evaluationProps);
+            props.callback(evaluationProps);
             return;
         }
 
-        for (let i: number = 0; i < pieceMovement.length; i++) {
+        const pieceMovementArray: Array<PieceMovement> = pieceMovement as Array<PieceMovement>;
+        for (let i: number = 0; i < pieceMovementArray.length; i++) {
             const evaluationProps: EvaluatePieceMovementOutputProps = EvaluatePieceMovement({
                 ...props,
                 cells: props.cells,
-                pieceMovement: pieceMovement[i],
+                pieceMovement: pieceMovementArray[i],
+                pieceMovementLine: pieceMovementArray,
+                preferredArguments: props.preferredArguments,
             });
 
-            props.callbackFunction(evaluationProps);
+            props.callback(evaluationProps);
 
             if (!evaluationProps.movementIsExtendible) { break; }
         }
     });
 }
 
-export default ApplyToValidPieceMovements;
+export default ApplyToPieceValidMovements;
+
+type GetPieceValidMovementsProps = {
+    cells: Array<Array<Cell>>;
+    pieceMovements: PieceMovements;
+    checkOccurrence: CheckOccurrence;
+    preferredArguments?: {
+        cell: Cell;
+    };
+} & Coordinates;
+
+export function GetPieceValidMovements(props: GetPieceValidMovementsProps): Array<PieceMovement> {
+    var pieceValidMovements: Array<PieceMovement> = [];
+
+    ApplyToPieceValidMovements({
+        ...props,
+        callback: (evaluationProps: EvaluatePieceMovementOutputProps): void => {
+            if (evaluationProps.cellState == null) { return; }
+
+            pieceValidMovements.push(evaluationProps.pieceMovement);
+        },
+    });
+
+    return pieceValidMovements;
+}

@@ -2,7 +2,7 @@ import Cell from "./Cell";
 
 type CheckOccurrence = {
     kingCell: Cell;
-    threateningCell: Cell;
+    threateningCellLines: Array<Array<Cell>>;
 };
 
 export default CheckOccurrence;

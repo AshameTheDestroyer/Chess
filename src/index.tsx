@@ -4,6 +4,8 @@ import React, { useEffect } from "react";
 import { HashRouter, Route, Routes } from "react-router-dom";
 
 import { Store } from "./Store/Store";
+import "./Utilities/Extensions/MaxBy";
+import "./Utilities/Extensions/MinBy";
 import "./Utilities/Extensions/ToClassName";
 import "./Utilities/Extensions/ChooseRandomly";
 import Header from "./Components/Header/Header";

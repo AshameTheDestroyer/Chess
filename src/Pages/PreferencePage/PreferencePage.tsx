@@ -23,24 +23,35 @@ function OptionSection(): React.ReactElement {
     const Dispatch = useDispatch();
     const PreferenceSlice = useSelector(SelectPreferenceSlice);
 
-    const [showMovements, setShowMovements] = useState(PreferenceSlice.options.showMovements);
+    const [showHintMovements, setShowHintMovements] = useState(PreferenceSlice.options.showHintMovements);
+    const [showPlayedMovements, setShowPlayedMovements] = useState(PreferenceSlice.options.showPlayedMovements);
 
     useEffect(() => {
         Dispatch(SetOptions({
-            showMovements,
+            showHintMovements,
+            showPlayedMovements: showPlayedMovements || showHintMovements,
         }));
-    }, [showMovements]);
+    }, [showHintMovements, showPlayedMovements]);
 
     return (
         <section id="options-section">
             <h1>Options</h1>
 
             <ToggleButton
-                id="show-movements1"
-                text="Show Movements"
-                isChecked={showMovements}
+                id="show-hint-movements"
+                text="Show Hint Movements"
+                isChecked={showHintMovements}
 
-                setIsChecked={setShowMovements}
+                setIsChecked={setShowHintMovements}
+            />
+
+            <ToggleButton
+                id="show-played-movements"
+                text="Show Played Movements"
+                isDisabled={showHintMovements}
+                isChecked={showPlayedMovements}
+
+                setIsChecked={setShowPlayedMovements}
             />
         </section>
     );

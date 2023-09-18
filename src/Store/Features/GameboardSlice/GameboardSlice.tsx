@@ -4,19 +4,24 @@ import { Store } from "../../Store";
 import Cell from "../../../Types/Cell";
 import { Piece, PieceColour } from "../../../Types/Piece";
 import AudioManager from "../../../Managers/AudioManager";
+import CheckThreats from "../../../Functions/CheckThreats";
 import CheckOccurrence from "../../../Types/CheckOccurrence";
 import Coordinates from "../../../Utilities/Types/Coordinates";
 import SetPieceActionType from "./ActionTypes/SetPieceActionType";
 import SetUpGameActionType from "./ActionTypes/SetUpGameActionType";
 import MovePieceActionType from "./ActionTypes/MovePieceActionType";
 import DecodeFENCode, { INITIAL_GAME_FEN_CODE } from "./ChessDecoder";
+import _DetectEndgameActionType from "./ActionTypes/_DetectEndgameActionType";
 import AlterCellStateActionType from "./ActionTypes/AlterCellStateActionType";
 import GenerateEmptyGameboard from "../../../Functions/GenerateEmptyGameboard";
+import _DetectCheckingActionType from "./ActionTypes/_DetectCheckingActionType";
 import _HandleSubMovementActionType from "./ActionTypes/_HandleSubMovementActionType";
-import ApplyToValidPieceMovements from "../../../Functions/ApplyToValidPieceMovements";
 import _UpdateKingCheckStateActionType from "./ActionTypes/_UpdateKingCheckStateActionType";
-import { GeneratePieceMovements, PieceMovements, AllPieceMovements } from "../../../Types/PieceMovements";
+import _UpdateKingTerritoryCellsActionType from "./ActionTypes/_UpdateKingTerritoryCellsActionType";
+import PieceMovement, { GeneratePieceMovements, PieceMovements } from "../../../Types/PieceMovements";
+import AddPieceMovementToPieceCoordinates from "../../../Functions/AddPieceMovementToPieceCoordinates";
 import { EvaluatePieceMovementOutputProps, FindKingRookCells } from "../../../Functions/EvaluatePieceMovement";
+import ApplyToPieceValidMovements, { GetPieceValidMovements } from "../../../Functions/ApplyToValidPieceMovements";
 
 import CellState, {
     AddCellState,
@@ -43,8 +48,18 @@ export const GameboardSlice = createSlice({
     reducers: {
         SetUpGame: (state: GameboardSliceType, action: PayloadAction<SetUpGameActionType>): void => {
             const pieceCells: Array<Cell> = DecodeFENCode(action.payload.FENCode);
-            pieceCells.forEach(pieceCell =>
-                state.cells[pieceCell.x][pieceCell.y].colouredPiece = pieceCell.colouredPiece);
+            pieceCells.forEach(pieceCell => {
+                if (pieceCell.colouredPiece == null) { return; }
+
+                GameboardSlice.caseReducers.SetPiece(state, {
+                    payload: {
+                        ...pieceCell,
+                        dontTriggerDetectChecking: true,
+                        colouredPiece: pieceCell.colouredPiece,
+                    },
+                    type: "gameboard/SetPiece",
+                });
+            });
 
             // FIX: Sound doesn't play on refresh, because DOM doesn't exist yet.
             AudioManager.Play("/src/assets/Audios/game-start.mp3");
@@ -102,11 +117,10 @@ export const GameboardSlice = createSlice({
 
             let movingPieceExists: boolean = fromCell.colouredPiece != null,
                 targetCellIsMovable: boolean = IsCellStateMovable(toCell.state),
-                movingPieceIsKing: boolean = movingPieceExists && fromCell.colouredPiece.piece == Piece.king;
+                movingPieceIsKing: boolean = fromCell.colouredPiece?.piece == Piece.king;
 
             if (!targetCellIsMovable) { return; }
             if (!movingPieceExists) { throw new Error(`Cell at { x: ${x1}, y: ${y1} } doesn't contain a piece.`); }
-            if (movingPieceIsKing) { state.cells[x1][y1].state = RemoveCellState(state.cells[x1][y1].state, CellState.checked); }
 
             GameboardSlice.caseReducers._HandleSneakMovement(state, {
                 payload: { fromCell, toCell },
@@ -121,25 +135,53 @@ export const GameboardSlice = createSlice({
             toCell.colouredPiece = fromCell.colouredPiece;
             delete fromCell.colouredPiece;
 
+            if (movingPieceIsKing) {
+                state.cells[x1][y1].state = RemoveCellState(state.cells[x1][y1].state, CellState.checked);
+
+                GameboardSlice.caseReducers._UpdateKingTerritoryCells(state, {
+                    payload: { kingCell: state.cells[x2][y2] },
+                    type: "gameboard/_DetectChecking",
+                });
+            }
+
             GameboardSlice.caseReducers._HandlePostMovementActions(state, {
                 payload: { fromCell, toCell },
                 type: "gameboard/_HandlePostMovementActions",
             });
 
-            GameboardSlice.caseReducers._DetectChecking(state);
+            GameboardSlice.caseReducers._DetectChecking(state, {
+                payload: { kingPieceColour: toCell.colouredPiece.colour },
+                type: "gameboard/_DetectChecking",
+            });
 
             GameboardSlice.caseReducers._PlayMovementSound(state, {
                 payload: { fromCell, toCell },
                 type: "gameboard/_PlayMovementSound",
             });
+
+            GameboardSlice.caseReducers._DetectEndgame(state, {
+                payload: { lastMovingPiece: toCell.colouredPiece },
+                type: "gameboard/_DetectEndgame",
+            });
         },
 
         SetPiece: (state: GameboardSliceType, action: PayloadAction<SetPieceActionType>): void => {
             const { x, y }: Coordinates = action.payload;
-
             state.cells[x][y].colouredPiece = action.payload.colouredPiece;
 
-            GameboardSlice.caseReducers._DetectChecking(state);
+            if (action.payload.colouredPiece.piece == Piece.king) {
+                GameboardSlice.caseReducers._UpdateKingTerritoryCells(state, {
+                    payload: { kingCell: state.cells[x][y] },
+                    type: "gameboard/_DetectChecking",
+                });
+            }
+
+            if (action.payload.dontTriggerDetectChecking) { return; }
+
+            GameboardSlice.caseReducers._DetectChecking(state, {
+                payload: { kingPieceColour: state.cells[x][y].colouredPiece.colour },
+                type: "gameboard/_DetectChecking",
+            });
         },
 
         _ResetMovableCells: (state: GameboardSliceType): void => {
@@ -152,17 +194,51 @@ export const GameboardSlice = createSlice({
                 { x, y }: Coordinates = action.payload,
                 pieceMovements: PieceMovements = GeneratePieceMovements(state.cells[x][y].colouredPiece.piece);
 
-            ApplyToValidPieceMovements({
+            ApplyToPieceValidMovements({
                 x,
                 y,
                 pieceMovements,
                 cells: state.cells,
                 checkOccurrence: state.checkOccurrence,
-                callbackFunction: (props: EvaluatePieceMovementOutputProps): void => {
-                    const { x: x0, y: y0 } = props;
-                    if (props.cellState == null) { return; }
-                    state.cells[x0][y0].state = AddCellState(state.cells[x0][y0].state, props.cellState);
+                callback: (evaluationProps: EvaluatePieceMovementOutputProps): void => {
+                    if (evaluationProps.cellState == null) { return; }
+
+                    const { x: x0, y: y0 } = evaluationProps;
+                    state.cells[x0][y0].state = AddCellState(state.cells[x0][y0].state, evaluationProps.cellState);
                 },
+            });
+        },
+
+        _UpdateKingTerritoryCells: (state: GameboardSliceType, action: PayloadAction<_UpdateKingTerritoryCellsActionType>): void => {
+            const kingCell: Cell = action.payload.kingCell;
+
+            state.cells.flat().forEach(cell => {
+                let cellIsTerritorialized: boolean = cell.territorializedKingColours != null,
+                    cellIsTerritorializedByKing: boolean = cell.territorializedKingColours?.includes(kingCell.colouredPiece.colour);
+
+                if (!cellIsTerritorialized || !cellIsTerritorializedByKing) { return; }
+
+                cell.territorializedKingColours = cell.territorializedKingColours
+                    .filter(territorializedKingColour => territorializedKingColour != kingCell.colouredPiece.colour);
+
+                if (cell.territorializedKingColours.length == 0) { delete cell.territorializedKingColours; }
+            });
+
+            const kingMovements: PieceMovements = GeneratePieceMovements(Piece.king);
+
+            kingMovements.forEach(kingMovement => {
+                let movementIsArray: boolean = kingMovement instanceof Array;
+
+                const
+                    kingMovement_: PieceMovement = (movementIsArray) ? kingMovement[0] : kingMovement,
+                    { x: x0, y: y0 }: Coordinates = AddPieceMovementToPieceCoordinates(kingCell, kingMovement_),
+                    cell: Cell = state.cells[x0]?.[y0];
+
+                if (cell == null) { return; }
+                if (cell.territorializedKingColours?.includes(kingCell.colouredPiece.colour)) { return; }
+
+                cell.territorializedKingColours ??= [];
+                cell.territorializedKingColours.push(kingCell.colouredPiece.colour);
             });
         },
 
@@ -236,56 +312,101 @@ export const GameboardSlice = createSlice({
             AudioManager.Play(AUDIO_SOURCE);
         },
 
-        _DetectChecking: (state: GameboardSliceType): void => {
-            const kingCells: Array<Cell> = state.cells.flat()
-                .filter(cell => cell.colouredPiece?.piece == Piece.king);
+        _UpdateKingCheckingState: (state: GameboardSliceType, action: PayloadAction<_UpdateKingCheckStateActionType>): void => {
+            const
+                kingCell: Cell = action.payload.kingCell,
+                threateningCellLines: Array<Array<Cell>> = CheckThreats({ ...state, kingCell });
 
-            kingCells.forEach(kingCell => GameboardSlice.caseReducers._UpdateKingCheckState(state, {
-                payload: { kingCell },
-                type: "gameboard/_UpdateKingCheckState",
-            }));
+            let kingShouldBeSafe: boolean = threateningCellLines.length == 0;
+            if (kingShouldBeSafe) {
+                kingCell.state = RemoveCellState(kingCell.state, CellState.checked);
+                delete state.checkOccurrence;
+
+                return;
+            }
+
+            kingCell.state = AddCellState(kingCell.state, CellState.checked);
+            AudioManager.Play("/src/assets/Audios/check.mp3");
+            state.checkOccurrence ??= {
+                kingCell,
+                threateningCellLines,
+            };
         },
 
-        _UpdateKingCheckState: (state: GameboardSliceType, action: PayloadAction<_UpdateKingCheckStateActionType>): void => {
-            const kingCell: Cell = action.payload.kingCell;
+        _DetectChecking: (state: GameboardSliceType, action: PayloadAction<_DetectCheckingActionType>): void => {
+            const
+                kingCells: Array<Cell> = state.cells.flat().filter(cell => cell.colouredPiece?.piece == Piece.king),
+                kingCell: Cell = kingCells.find(cell => cell.colouredPiece.colour == action.payload.kingPieceColour),
+                foeKingCell: Cell = kingCells.find(cell => cell.colouredPiece.colour != action.payload.kingPieceColour);
 
-            let foeKingIsSafe: boolean = true;
-            AllPieceMovementsLoop: for (const [piece, pieceMovements] of AllPieceMovements) {
-                if (piece == Piece.king) { continue; }
+            let kingIsChecked: boolean = state.checkOccurrence?.kingCell.colouredPiece.colour == action.payload.kingPieceColour;
+            if (kingIsChecked) {
+                GameboardSlice.caseReducers._UpdateKingCheckingState(state, {
+                    payload: { kingCell },
+                    type: "gameboard/_UpdateKingCheckingState",
+                });
+            }
 
-                ApplyToValidPieceMovements({
+            GameboardSlice.caseReducers._UpdateKingCheckingState(state, {
+                payload: { kingCell: foeKingCell },
+                type: "gameboard/_UpdateKingCheckingState",
+            });
+        },
+
+        _DetectEndgame: (state: GameboardSliceType, action: PayloadAction<_DetectEndgameActionType>): void => {
+            const
+                kingCell: Cell = state.cells.flat().find(cell =>
+                    cell.colouredPiece?.piece == Piece.king &&
+                    cell.colouredPiece?.colour != action.payload.lastMovingPiece.colour),
+                kingMovements: PieceMovements = GeneratePieceMovements(Piece.king),
+                kingValidMovements: Array<PieceMovement> = GetPieceValidMovements({
                     ...kingCell,
-                    pieceMovements,
                     cells: state.cells,
+                    pieceMovements: kingMovements,
                     checkOccurrence: state.checkOccurrence,
-                    callbackFunction: (props: EvaluatePieceMovementOutputProps): void => {
-                        const
-                            { x: x0, y: y0 } = props,
-                            cell: Cell = state.cells[x0]?.[y0];
-
-                        let foePieceExists: boolean = cell?.colouredPiece?.colour != kingCell.colouredPiece.colour,
-                            pieceIsThreatening: boolean = foePieceExists && cell?.colouredPiece?.piece == piece;
-
-                        if (foeKingIsSafe &&= !pieceIsThreatening) { return; }
-
-                        kingCell.state = AddCellState(kingCell.state, CellState.checked);
-
-                        state.checkOccurrence ??= {
-                            kingCell,
-                            threateningCell: cell,
-                        };
-
-                        AudioManager.Play("/src/assets/Audios/check.mp3");
+                    preferredArguments: {
+                        cell: {
+                            ...kingCell,
+                            state: CellState.checked,
+                        },
                     },
                 });
 
-                if (!foeKingIsSafe) { break; }
+            let kingIsCornered: boolean = kingValidMovements.length == 0;
+            if (!kingIsCornered) { return; }
+
+            const validMovementCount: number = state.cells.flat().reduce((validMovementCount, cell): number => {
+                let pieceIsFoe: boolean = cell.colouredPiece?.colour != kingCell.colouredPiece.colour,
+                    pieceIsKing: boolean = cell.colouredPiece?.piece == Piece.king;
+
+                if (pieceIsFoe || pieceIsKing) { return validMovementCount; }
+
+                const
+                    pieceMovements: PieceMovements = GeneratePieceMovements(cell.colouredPiece.piece),
+                    pieceValidMovements: Array<PieceMovement> = GetPieceValidMovements({
+                        ...cell,
+                        cells: state.cells,
+                        pieceMovements: pieceMovements,
+                        checkOccurrence: state.checkOccurrence,
+                    });
+
+                return validMovementCount + pieceValidMovements.length;
+            }, 0);
+
+            let noPieceCanHelpMove: boolean = validMovementCount == 0,
+                checkOccurrenceExists: boolean = state.checkOccurrence != null;
+
+            if (!noPieceCanHelpMove) { return; }
+
+            // FIX: Audio is not supported.
+            AudioManager.Play("../../../assets/Audios/game-end.webm");
+
+            if (checkOccurrenceExists) {
+                alert("checkmate.");
+                return;
             }
 
-            if (!foeKingIsSafe) { return; }
-
-            kingCell.state = RemoveCellState(kingCell.state, CellState.checked);
-            delete state.checkOccurrence;
+            alert("draw.");
         },
     },
 });

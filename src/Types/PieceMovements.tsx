@@ -4,10 +4,10 @@ import EitherOrNeither from "../Utilities/Types/EitherOrNeither";
 import { CHESS_PIECE_COUNT } from "../Functions/GenerateEmptyGameboard";
 
 type PieceMovement = {
-    isFirstMoveOnly?: boolean;
     isCastlable?: boolean;
     isPromotable?: boolean;
     isSneakAttack?: boolean;
+    isFirstMoveOnly?: boolean;
 } & EitherOrNeither<{
     isMoveOnly: boolean;
 }, {
