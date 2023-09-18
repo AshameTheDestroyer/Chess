@@ -1,4 +1,4 @@
-import ColouredPiece from "@/Types/Piece";
+import ColouredPiece from "../../../../Types/Piece";
 
 type _DetectEndgameActionType = {
     lastMovingPiece: ColouredPiece;
