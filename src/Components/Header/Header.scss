@@ -2,7 +2,10 @@
 
 #main-header {
     $padding: 2rem;
+    $border-bottom-thickness: 0.2rem;
 
+    position: sticky;
+    top: 0;
     height: calc(var(--header-height) - $padding * 2);
 
     display: grid;
@@ -11,18 +14,24 @@
     place-items: center;
     gap: 2rem;
 
-    padding: $padding;
+    padding: calc($padding - $border-bottom-thickness);
+
+    background-color: var(--half-transparent);
+    background-color: var(--background-darker-colour);
+
+    border: var(--background-colour) $border-bottom-thickness solid;
 
     z-index: 3;
 
     #logo {
+        font-size: min(100%, 3vw);
         text-decoration: none;
 
         width: min-content;
 
         display: flex;
-        place-content: center;
-        place-items: center;
+        place-content: center stretch;
+        place-items: center stretch;
 
         padding: 0.2rem;
 
@@ -40,7 +49,8 @@
         }
 
         img {
-            width: 5rem;
+            height: min(5rem, 10vw);
+            aspect-ratio: 1;
         }
 
         h1 {

@@ -13,10 +13,6 @@
         grid-template-rows: repeat(2, 1fr);
         gap: 2rem;
 
-        &:first-child {
-            overflow: hidden;
-        }
-
         &>div {
             display: flex;
             flex-direction: column;
@@ -27,13 +23,15 @@
 
         #piece-image-displayer {
             position: relative;
-            min-height: calc(100vh - var(--header-height) - var(--padding) * 2);
             min-height: calc(100dvh - var(--header-height) - var(--padding) * 2);
+            min-height: calc(100vh - var(--header-height) - var(--padding) * 2);
 
             grid-row: 1;
 
+            overflow: hidden;
+
             &>figure>svg {
-                $size: calc(60% - var(--padding) * 2);
+                $size: calc(min(27.5rem, 54vw) - var(--padding) * 2);
 
                 position: absolute;
                 top: 50%;
@@ -67,7 +65,7 @@
                             }
 
                             to {
-                                transform: translate(calc(-50% + 30% * ($i - 2) - var(--padding)), -50%) rotate(calc(10deg * ($i - 2))) scale(calc(1 + 1 * $i / 10));
+                                transform: translate(calc(-50% + 50% * ($i - 2.5)), -75%) rotate(calc(10deg * ($i - 2))) scale(calc(1 + 1 * $i / 10));
 
                                 opacity: 1;
                             }

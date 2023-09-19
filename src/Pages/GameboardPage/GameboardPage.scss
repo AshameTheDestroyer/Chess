@@ -1,7 +1,7 @@
 @use "../../index.scss";
 
-$gameboard-width: calc(100vmin - var(--header-height) - 2rem * 2);
-$gameboard-gap: 0.3rem;
+$gameboard-width: calc(100vmin - var(--header-height));
+$gameboard-gap: 0.25em;
 
 $piece-size: 0.75;
 
@@ -9,21 +9,20 @@ $cell-states: playedFrom, playedTo, move, attack, promote, castle, sneak, checke
 $cell-state-colours: #ffd700, #ffd700, #0044ff, #f31818, #10f568, #9b0ba8, #9b0ba8, #801616, #ff4500, #20b2aa;
 
 #gameboard-body {
-    --padding: 2rem;
+    --padding: 4rem;
 
     position: relative;
 
     padding: var(--padding);
 
     #gameboard {
-        $padding: 2.5rem;
+        $padding: 1.75rem;
 
         position: absolute;
-        top: 50%;
         left: 50%;
-        transform: translate(-50%, -50%);
+        transform: translate(-50%);
 
-        width: calc($gameboard-width - $padding * 2);
+        width: $gameboard-width;
         aspect-ratio: 1;
 
         display: grid;
@@ -37,7 +36,8 @@ $cell-state-colours: #ffd700, #ffd700, #0044ff, #f31818, #10f568, #9b0ba8, #9b0b
 
         background-color: var(--board-colour);
 
-        border: 0.2rem solid var(--light-colour);
+        box-sizing: border-box;
+        border: 0.2em solid var(--light-colour);
 
         &.gameboard-without-hint-movements .cell:not(.selected-cell, .ready-cell, .playedFrom-cell, .playedTo-cell, .checked-cell),
         &.gameboard-without-played-movements .cell:not(.selected-cell, .ready-cell, .checked-cell) {
@@ -69,13 +69,15 @@ $cell-state-colours: #ffd700, #ffd700, #0044ff, #f31818, #10f568, #9b0ba8, #9b0b
             }
 
             @mixin emphasize-cell() {
-                transform: scale(0.9);
+                --modifier: 0.9;
+
+                transform: scale(var(--modifier));
 
                 &::before,
                 &::after {
-                    --margin-modifier-left: calc((-0.75 * 1 / 0.9));
-                    --margin-modifier-bottom: calc((-0.9 * 1 / 0.9));
-                    --scale-modifier: calc(1 / 0.9);
+                    --margin-modifier-left: calc((var(--modifier) * -1 / var(--modifier)));
+                    --margin-modifier-bottom: calc((var(--modifier) * -1 / var(--modifier)));
+                    --scale-modifier: calc(1 / var(--modifier));
                 }
             }
 
@@ -89,7 +91,7 @@ $cell-state-colours: #ffd700, #ffd700, #0044ff, #f31818, #10f568, #9b0ba8, #9b0b
                     $cell-state-colour: nth($list: $cell-state-colours, $n: index($list: $cell-states, $value: $cell-state));
 
                     @include emphasize-cell();
-                    @include index.box-shadow($thickness: 0.3rem, $colour: $cell-state-colour);
+                    @include index.box-shadow($thickness: min(0.3rem, 0.45vw), $colour: $cell-state-colour);
                 }
             }
 
@@ -102,6 +104,7 @@ $cell-state-colours: #ffd700, #ffd700, #0044ff, #f31818, #10f568, #9b0ba8, #9b0b
                 &::before,
                 &::after {
                     font-weight: bold;
+                    font-size: 75%;
 
                     position: absolute;
 
@@ -185,7 +188,10 @@ svg.piece {
 @media (min-width: index.$first-screen-width) {
 
     #gameboard {
+        top: 50%;
         left: var(--padding) !important;
         transform: translateY(-50%) !important;
+
+        width: calc($gameboard-width - var(--padding) * 2) !important;
     }
 }
