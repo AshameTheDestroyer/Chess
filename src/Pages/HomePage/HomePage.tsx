@@ -75,7 +75,12 @@ export default function HomePage(): React.ReactElement {
                     </p>
                 </div>
 
-                <div id="piece-image-displayer">
+                <div
+                    id="piece-image-displayer"
+                    className={[
+                        (PreferenceSlice.options.alterPieceColours) && "alter-piece-colours",
+                    ].toClassName()}
+                >
                     <figure> {
                         displayedPieceImages.map((displayedPieceImage, i) =>
                             (PIECE_IMAGES[displayedPieceImage] as React.FunctionComponent<React.SVGProps<SVGSVGElement> & { title?: string }>)({

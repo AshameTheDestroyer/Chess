@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { createPortal } from "react-dom";
 
 import Coordinates from "../../Types/Coordinates";
 import EitherOrNeither from "../../Types/EitherOrNeither";
+import AudioManager from "../../../Managers/AudioManager";
 import ComponentProps, { ChildlessComponentProps, ComponentEventProps } from "../../Types/ComponentProps";
 
 import "./Modal.scss";
@@ -16,6 +17,7 @@ export type ModalComponentProps = {
 };
 
 export type ModalProps = {
+    doesntRiseSound?: boolean;
     preventOutsideClosing?: boolean;
     backgroundProps?: ChildlessComponentProps;
 } & EitherOrNeither<{ isForm: false }, {
@@ -52,6 +54,12 @@ export default function Modal(props: ModalProps): React.ReactElement {
             bottom: (props.coordinates.y > window.innerHeight * 3 / 4) ? `${window.innerHeight - props.coordinates.y}px` : "auto",
         }
     }
+
+    useEffect(() => {
+        if (!props.isOpen || props.doesntRiseSound) { return; }
+
+        AudioManager.Play("/Chess-Engine/src/assets/Audios/notification.mp3");
+    }, [props.isOpen]);
 
     function OnOutsideClick(e: React.MouseEvent<HTMLElement, MouseEvent>): void {
         if (!props.preventOutsideClosing && e.currentTarget == e.target) { props.setIsOpen(false); }

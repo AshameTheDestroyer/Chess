@@ -59,7 +59,7 @@ function GenerateThreateningCellLines(props: GenerateThreateningCellLinesProps):
         canPieceMovementAttackKing: boolean =
             !props.pieceMovement.isMoveOnly &&
             !props.pieceMovement.isCastlable &&
-            !props.pieceMovement.isSneakAttack &&
+            !props.pieceMovement.isEnPassant &&
             !props.pieceMovement.isFirstMoveOnly;
 
     if (!pieceExists || !canPieceMovementAttackKing) { return; }

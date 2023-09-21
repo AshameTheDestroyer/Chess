@@ -13,7 +13,7 @@ import ContextMenu, { ContextMenuGroupWithSelector } from "../../Utilities/Compo
 import CellState, { DoCellStatesIntersect, GetMostImportantCellState, IsCellStateMovable } from "../../Types/CellState";
 
 import Coordinates, {
-    CoordinateToIndex,
+    CoordinatesToIndex,
     IndexToCoordinates,
     RegularIndexToBoardIndex,
 } from "../../Utilities/Types/Coordinates";
@@ -33,6 +33,7 @@ import PIECE_IMAGES from "./PieceImages";
 
 export default function GameboardPage(): React.ReactElement {
     const GameboardSlice = useSelector(SelectGameboardSlice);
+    const PreferenceSlice = useSelector(SelectPreferenceSlice);
     const Dispatch = useDispatch();
 
     const [draggedCell, setDraggedCell] = useState<Cell>(null);
@@ -121,7 +122,12 @@ export default function GameboardPage(): React.ReactElement {
     }, []);
 
     return (
-        <main id="gameboard-body">
+        <main
+            id="gameboard-body"
+            className={[
+                (PreferenceSlice.options.alterPieceColours) && "alter-piece-colours",
+            ].toClassName()}
+        >
             <GameboardElement
                 draggedCell={draggedCell}
                 readyToPromoteCell={readyToPromoteCell}
@@ -168,7 +174,19 @@ function GameboardElement(props: GameboardElementProps): React.ReactElement {
     const getCellElements =
         (): Array<HTMLButtonElement> => (cellElements_ ??= Array.from(document.querySelectorAll(".cell")));
 
+    useEffect(() => {
+        if (props.readyToPromoteCell == null) { return; }
+
+        return () => {
+            const promotedCellCoordinates: Coordinates = props.readyToPromoteCell;
+            getCellElements()[CoordinatesToIndex(promotedCellCoordinates, CHESS_PIECE_COUNT)].focus();
+        };
+    }, [props.readyToPromoteCell]);
+
+
     function OnGameboardKeyDown(e: React.KeyboardEvent<HTMLElement>): void {
+        if (props.readyToPromoteCell != null) { return; }
+
         const cellElement: HTMLButtonElement =
             e.currentTarget.querySelector(".cell.selected-cell") ??
             e.currentTarget.querySelector(".cell.ready-cell") ??
@@ -185,6 +203,8 @@ function GameboardElement(props: GameboardElementProps): React.ReactElement {
         const
             originalIndex: number = Number(cellElement.dataset["originalIndex"]),
             nextCellElement: HTMLButtonElement = getCellElements()[CalculateMovingIndex(originalIndex, e)];
+
+        if (nextCellElement == cellElement) { return; }
 
         nextCellElement.focus();
 
@@ -292,7 +312,7 @@ function GameboardElement(props: GameboardElementProps): React.ReactElement {
         RemoveStateFromSingularCellElement(CellState.playedFrom);
 
         const
-            index: number = CoordinateToIndex({ x: x1, y: CHESS_PIECE_COUNT - y1 - 1 }, CHESS_PIECE_COUNT),
+            index: number = CoordinatesToIndex({ x: x1, y: CHESS_PIECE_COUNT - y1 - 1 }, CHESS_PIECE_COUNT),
             previousCellElement: HTMLButtonElement = getCellElements()[index];
 
         AddStateToCellElement(previousCellElement, CellState.playedFrom);

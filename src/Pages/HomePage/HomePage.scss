@@ -13,6 +13,8 @@
         grid-template-rows: repeat(2, 1fr);
         gap: 2rem;
 
+        overflow: hidden;
+
         &>div {
             display: flex;
             flex-direction: column;
@@ -28,22 +30,24 @@
 
             grid-row: 1;
 
-            overflow: hidden;
+            &.alter-piece-colours>figure>svg {
+                @include index.drop-shadow($colour: var(--board-colour), $blurriness: 0.1rem, $thickness: 0.3rem);
+            }
 
             &>figure>svg {
-                $size: calc(min(27.5rem, 54vw) - var(--padding) * 2);
+                --size: 50vw;
 
                 position: absolute;
                 top: 50%;
                 left: 50%;
                 transform: translate(-50%, -50%) scale(0);
 
-                width: $size;
-                height: $size;
+                width: calc(var(--size) - var(--padding) * 2);
+                height: calc(var(--size) - var(--padding) * 2);
 
                 opacity: 0;
 
-                @include index.drop-shadow($colour: var(--board-colour), $blurriness: 0.1rem, $thickness: 0.3rem);
+                @include index.drop-shadow($colour: var(black), $blurriness: 0.1rem, $thickness: 0.3rem);
 
                 @for $i from 1 through 4 {
 
@@ -65,7 +69,7 @@
                             }
 
                             to {
-                                transform: translate(calc(-50% + 50% * ($i - 2.5)), -75%) rotate(calc(10deg * ($i - 2))) scale(calc(1 + 1 * $i / 10));
+                                transform: translate(calc(-85% + 50% * ($i - 2)), -75%) rotate(calc(10deg * ($i - 2))) scale(calc(1 + 1 * $i / 10));
 
                                 opacity: 1;
                             }
@@ -84,6 +88,22 @@
     }
 }
 
+@media (min-width: index.$second-screen-width) {
+
+    #home-page {
+
+        &>section {
+
+            #piece-image-displayer {
+
+                &>figure>svg {
+                    --size: 40vw;
+                }
+            }
+        }
+    }
+}
+
 @media (min-width: index.$first-screen-width) {
 
     #home-page {
@@ -96,6 +116,10 @@
                 min-height: auto;
 
                 grid-row: auto;
+
+                &>figure>svg {
+                    --size: min(25rem, 28vw);
+                }
             }
         }
     }

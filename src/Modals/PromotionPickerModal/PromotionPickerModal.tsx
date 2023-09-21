@@ -1,26 +1,29 @@
 import React from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
+import Cell from "../../Types/Cell";
 import { IsPiecePromotableTo, Piece } from "../../Types/Piece";
 import { SetPiece } from "../../Store/Features/GameboardSlice/GameboardSlice";
 import Modal, { ModalComponentProps } from "../../Utilities/Components/Modal/Modal";
+import { SelectPreferenceSlice } from "../../Store/Features/PreferenceSlice/PreferenceSlice";
 
 import "./PromotionPickerModal.scss";
 
 import PIECE_IMAGES from "../../Pages/GameboardPage/PieceImages";
-import Cell from "../../Types/Cell";
 
 type PromotionPickerModalProps = {
     readyToPromoteCell: Cell;
 } & ModalComponentProps;
 
 export default function PromotionPickerModal(props: PromotionPickerModalProps): React.ReactElement {
+    const PreferenceSlice = useSelector(SelectPreferenceSlice);
     const Dispatch = useDispatch();
 
     function OnButtonClick(e: React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
         const pieceName: string = (e.currentTarget as HTMLButtonElement).dataset["piece"];
 
         Dispatch(SetPiece({
+            isPromoting: true,
             x: props.readyToPromoteCell.x,
             y: props.readyToPromoteCell.y,
             colouredPiece: {
@@ -36,6 +39,9 @@ export default function PromotionPickerModal(props: PromotionPickerModalProps): 
         <Modal
             id="promotion-picker-modal"
             backgroundProps={{ id: "promotion-picker-modal-background" }}
+            className={[
+                (PreferenceSlice.options.alterPieceColours) && "alter-piece-colours",
+            ].toClassName()}
 
             isPopup
             preventOutsideClosing

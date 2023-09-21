@@ -1,10 +1,10 @@
 import React, { useEffect } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 import ChessTheme, { CHESS_THEMES } from "../../Types/ChessTheme";
 import useGeneratePieceImages from "../../Hooks/useGeneratePieceImages";
 import CustomButton from "../../Utilities/Components/CustomButton/CustomButton";
-import { SetChessTheme } from "../../Store/Features/PreferenceSlice/PreferenceSlice";
+import { SelectPreferenceSlice, SetChessTheme } from "../../Store/Features/PreferenceSlice/PreferenceSlice";
 
 import "./ChessThemePickerDisplayer.scss";
 
@@ -15,8 +15,16 @@ type ChessThemePickerDisplayerProps = {
 };
 
 export default function ChessThemePickerDisplayer(props: ChessThemePickerDisplayerProps): React.ReactElement {
+    const PreferenceSlice = useSelector(SelectPreferenceSlice);
+
     return (
-        <section id="chess-theme-picker-section">
+        <section
+            id="chess-theme-picker-section"
+
+            className={[
+                (PreferenceSlice.options.alterPieceColours) && "alter-piece-colours",
+            ].toClassName()}
+        >
             <h1>Chess Theme</h1>
 
             <div id="chess-theme-picker-displayer"> {

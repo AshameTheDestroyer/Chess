@@ -12,7 +12,7 @@ export function IndexToCoordinates(index: number, maximum: number): Coordinates 
     };
 }
 
-export function CoordinateToIndex(coordinates: Coordinates, maximum: number): number {
+export function CoordinatesToIndex(coordinates: Coordinates, maximum: number): number {
     return coordinates.x + coordinates.y * maximum;
 }
 

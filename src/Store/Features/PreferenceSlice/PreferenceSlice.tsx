@@ -6,6 +6,7 @@ import { GetFromLocalStorage, SetInLocalStorage } from "../../../Utilities/Funct
 
 export type PreferenceOptions = {
     showHintMovements: boolean;
+    alterPieceColours: boolean;
     showPlayedMovements: boolean;
 };
 
@@ -18,6 +19,7 @@ const INITIAL_STATE: PreferenceSliceType = {
     chessTheme: GetFromLocalStorage("preference-chess-theme") ?? CHESS_THEMES[0],
     options: GetFromLocalStorage("preference-options") ?? {
         showHintMovements: true,
+        alterPieceColours: false,
         showPlayedMovements: true,
     },
 };

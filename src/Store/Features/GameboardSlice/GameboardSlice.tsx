@@ -35,6 +35,7 @@ import CellState, {
 type GameboardSliceType = {
     cells: Array<Array<Cell>>;
     checkOccurrence?: CheckOccurrence;
+
 };
 
 const INITIAL_STATE: GameboardSliceType = {
@@ -54,7 +55,7 @@ export const GameboardSlice = createSlice({
                 GameboardSlice.caseReducers.SetPiece(state, {
                     payload: {
                         ...pieceCell,
-                        dontTriggerDetectChecking: true,
+                        doesntTriggerDetectChecking: true,
                         colouredPiece: pieceCell.colouredPiece,
                     },
                     type: "gameboard/SetPiece",
@@ -120,11 +121,13 @@ export const GameboardSlice = createSlice({
                 movingPieceIsKing: boolean = fromCell.colouredPiece?.piece == Piece.king;
 
             if (!targetCellIsMovable) { return; }
-            if (!movingPieceExists) { throw new Error(`Cell at { x: ${x1}, y: ${y1} } doesn't contain a piece.`); }
+            if (!movingPieceExists) {
+                throw new Error(`Cell at { x: ${x1}, y: ${y1} } doesn't contain a piece.`);
+            }
 
-            GameboardSlice.caseReducers._HandleSneakMovement(state, {
+            GameboardSlice.caseReducers._HandleEnPassantMovement(state, {
                 payload: { fromCell, toCell },
-                type: "gameboard/_HandleSneakMovement",
+                type: "gameboard/_HandleEnPassantMovement",
             });
 
             GameboardSlice.caseReducers._HandleCastlableMovement(state, {
@@ -148,21 +151,6 @@ export const GameboardSlice = createSlice({
                 payload: { fromCell, toCell },
                 type: "gameboard/_HandlePostMovementActions",
             });
-
-            GameboardSlice.caseReducers._DetectChecking(state, {
-                payload: { kingPieceColour: toCell.colouredPiece.colour },
-                type: "gameboard/_DetectChecking",
-            });
-
-            GameboardSlice.caseReducers._PlayMovementSound(state, {
-                payload: { fromCell, toCell },
-                type: "gameboard/_PlayMovementSound",
-            });
-
-            GameboardSlice.caseReducers._DetectEndgame(state, {
-                payload: { lastMovingPiece: toCell.colouredPiece },
-                type: "gameboard/_DetectEndgame",
-            });
         },
 
         SetPiece: (state: GameboardSliceType, action: PayloadAction<SetPieceActionType>): void => {
@@ -176,11 +164,15 @@ export const GameboardSlice = createSlice({
                 });
             }
 
-            if (action.payload.dontTriggerDetectChecking) { return; }
+            if (action.payload.isPromoting) {
+                AudioManager.Play("/Chess-Engine/src/assets/Audios/promote.mp3");
+            }
 
-            GameboardSlice.caseReducers._DetectChecking(state, {
-                payload: { kingPieceColour: state.cells[x][y].colouredPiece.colour },
-                type: "gameboard/_DetectChecking",
+            if (action.payload.doesntTriggerDetectChecking) { return; }
+
+            GameboardSlice.caseReducers._HandlePostMovementActions(state, {
+                payload: { fromCell: state.cells[x][y], toCell: state.cells[x][y] },
+                type: "gameboard/_HandlePostMovementActions",
             });
         },
 
@@ -242,13 +234,13 @@ export const GameboardSlice = createSlice({
             });
         },
 
-        _HandleSneakMovement: (state: GameboardSliceType, action: PayloadAction<_HandleSubMovementActionType>): void => {
+        _HandleEnPassantMovement: (state: GameboardSliceType, action: PayloadAction<_HandleSubMovementActionType>): void => {
             const { x, y }: Coordinates = action.payload.toCell;
 
             let pieceIsWhite: boolean = action.payload.fromCell.colouredPiece?.colour == PieceColour.white,
-                targetCellIsSneaking: boolean = DoCellStatesIntersect(action.payload.toCell.state, CellState.sneak);
+                targetCellIsCurrentlyEnPassant: boolean = DoCellStatesIntersect(action.payload.toCell.state, CellState.enPassant);
 
-            if (!targetCellIsSneaking) { return; }
+            if (!targetCellIsCurrentlyEnPassant) { return; }
 
             delete state.cells[x][y + ((pieceIsWhite) ? -1 : + 1)].colouredPiece;
         },
@@ -285,10 +277,10 @@ export const GameboardSlice = createSlice({
                 cell.colouredPiece.canBeSnuckUpon &&= false;
             });
 
-            let pieceRecordsSneaking: boolean = action.payload.toCell.colouredPiece.canBeSnuckUpon != null,
+            let pieceRecordsEnPassant: boolean = action.payload.toCell.colouredPiece.canBeSnuckUpon != null,
                 pieceRecordsMovements: boolean = action.payload.toCell.colouredPiece.hasMoved != null;
 
-            if (pieceRecordsSneaking) {
+            if (pieceRecordsEnPassant) {
                 let pawnHasMoved: boolean = action.payload.toCell.colouredPiece.hasMoved,
                     pawnHasMovedTwoCells: boolean = Math.abs(y1 - y2) == 2;
 
@@ -296,16 +288,30 @@ export const GameboardSlice = createSlice({
             }
 
             if (pieceRecordsMovements) { action.payload.toCell.colouredPiece.hasMoved ||= true; }
+
+            GameboardSlice.caseReducers._DetectChecking(state, {
+                payload: { kingPieceColour: action.payload.toCell.colouredPiece.colour },
+                type: "gameboard/_DetectChecking",
+            });
+
+            GameboardSlice.caseReducers._PlayMovementSound(state, {
+                payload: action.payload,
+                type: "gameboard/_PlayMovementSound",
+            });
+
+            GameboardSlice.caseReducers._DetectEndgame(state, {
+                payload: { lastMovingPiece: action.payload.toCell.colouredPiece },
+                type: "gameboard/_DetectEndgame",
+            });
         },
 
         _PlayMovementSound: (_state: GameboardSliceType, action: PayloadAction<_HandleSubMovementActionType>): void => {
-            // TODO: Add sneak attack sound.
-            const AUDIO_SOURCE: string = "/src/assets/Audios/" + (() => {
-                switch (GetMostImportantCellState(action.payload.toCell.state)) {
-                    case CellState.move: return "move";
-                    case CellState.attack: return "attack";
-                    case CellState.castle: return "castle";
-                    case CellState.promote: return "promote";
+            const AUDIO_SOURCE: string = "/Chess-Engine/src/assets/Audios/" + (() => {
+                const mostImportantState: CellState = GetMostImportantCellState(action.payload.toCell.state);
+                switch (mostImportantState) {
+                    case CellState.move: case CellState.enPassant:
+                    case CellState.attack: case CellState.castle:
+                        return CellState[mostImportantState];
                 }
             })() + ".mp3";
 
@@ -398,15 +404,14 @@ export const GameboardSlice = createSlice({
 
             if (!noPieceCanHelpMove) { return; }
 
-            // FIX: Audio is not supported.
-            AudioManager.Play("../../../assets/Audios/game-end.webm");
-
             if (checkOccurrenceExists) {
+                AudioManager.Play("/Chess-Engine/src/assets/Audios/checkmate.mp3");
                 alert("checkmate.");
                 return;
             }
 
-            alert("draw.");
+            AudioManager.Play("/Chess-Engine/src/assets/Audios/stalemate.mp3");
+            alert("stalemate.");
         },
     },
 });

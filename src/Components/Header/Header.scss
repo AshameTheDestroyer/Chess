@@ -19,11 +19,13 @@
     background-color: var(--half-transparent);
     background-color: var(--background-darker-colour);
 
-    border: var(--background-colour) $border-bottom-thickness solid;
+    border-bottom: var(--background-colour) $border-bottom-thickness solid;
 
     z-index: 3;
 
     #logo {
+        --font-border-thickness: 0.09em;
+
         font-size: min(100%, 3vw);
         text-decoration: none;
 
@@ -35,7 +37,6 @@
 
         padding: 0.2rem;
 
-        background-color: var(--background-colour);
         border-radius: 1rem;
 
         transition: background-color 250ms, transform 500ms;
@@ -45,7 +46,11 @@
         &:is(:hover, :focus-within) {
             transform: scale(1.05);
 
-            background-color: var(--background-darker-colour);
+            background-color: var(--background-colour);
+
+            h1 {
+                @include index.text-shadow($thickness: var(--font-border-thickness), $colour: var(--background-colour));
+            }
         }
 
         img {
@@ -59,7 +64,9 @@
 
             pointer-events: none;
 
-            @include index.text-shadow($thickness: 0.275rem, $colour: var(--background-colour));
+            transition: text-shadow 250ms;
+
+            @include index.text-shadow($thickness: var(--font-border-thickness), $colour: var(--background-darker-colour));
         }
     }
 }

@@ -25,7 +25,7 @@ Today we're not making any tedious Chess Game, no baby today we're making A WHOL
 3. Minor bug fixes.
 
 ### Home Page:
-1. This one was simple, I created a basic homepage, with some Context Menu bug fixes, and then throwed a bunch of SASS on it.
+1. This one was simple, I created a basic homepage, with some Context Menu bug fixes, and then threw a bunch of SASS on it.
 2. I've made a Custom Button component, as well as a Custom Button Displayer, and I've given them a poppy cartoony-ish style, which in my opinion, looks amazing.
 3. Custom Buttons implement:
    * Normal: boring.
@@ -60,7 +60,7 @@ Today we're not making any tedious Chess Game, no baby today we're making A WHOL
    * Royal.
    * Grass.
    * Nightfall.
-   * Pharanoic.
+   * Pharaonic.
    * Aquatic.
    * Pinky.
    * Evil.
@@ -71,8 +71,9 @@ Today we're not making any tedious Chess Game, no baby today we're making A WHOL
 ### Checkmating:
 1. As the name simply suggests, we can now, check, checkmate, or draw, our opponents, and it was so damn hard to implement.
 2. Kings now check for threatening foe pieces, whenever a piece is moved, then be checked if they're actually at the fire line.
-3. A piece can no longer move when a check occurrence exists, unless they can benifit their king.
+3. A piece can no longer move when a check occurrence exists, unless they can benefit their king.
 4. Also a piece can no longer move, if it's pinned by a foe piece, such that its movement can throw the king in danger.
 5. Kings can no longer move unless it was a safe spot.
-6. Also kings cannot interfere with any cell that's been territorilized by anyone else than them, thus no king can stick to another king's back.
+6. Also kings cannot interfere with any cell that's been territorialized by anyone else than them, thus no king can stick to another king's back.
 7. Currently a checkmate or a draw only triggers an alert, but that'll be implemented later on.
+8. Renamed the Sneak Movement into an En Passant Movement.

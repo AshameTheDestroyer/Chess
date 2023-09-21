@@ -82,7 +82,7 @@
             border-radius: 1.5rem;
 
             &:is(:hover, :focus-within) {
-                background-color: var(--background-darker-colour);
+                background-color: var(--background-colour);
             }
         }
     }

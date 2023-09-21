@@ -5,7 +5,7 @@ enum CellState {
     playedTo = 2 ** 3,
     move = 2 ** 4,
     attack = 2 ** 5,
-    sneak = 2 ** 6,
+    enPassant = 2 ** 6,
     castle = 2 ** 7,
     promote = 2 ** 8,
     checked = 2 ** 9,
@@ -25,7 +25,7 @@ export function IsCellStateSingular(cellState: CellState): boolean {
 export function IsCellStateMovable(cellState: CellState): boolean {
     return [
         CellState.move,
-        CellState.sneak,
+        CellState.enPassant,
         CellState.attack,
         CellState.castle,
         CellState.promote,

@@ -24,14 +24,16 @@ function OptionSection(): React.ReactElement {
     const PreferenceSlice = useSelector(SelectPreferenceSlice);
 
     const [showHintMovements, setShowHintMovements] = useState(PreferenceSlice.options.showHintMovements);
+    const [alterPieceColours, setAlterPieceColours] = useState(PreferenceSlice.options.alterPieceColours);
     const [showPlayedMovements, setShowPlayedMovements] = useState(PreferenceSlice.options.showPlayedMovements);
 
     useEffect(() => {
         Dispatch(SetOptions({
             showHintMovements,
+            alterPieceColours,
             showPlayedMovements: showPlayedMovements || showHintMovements,
         }));
-    }, [showHintMovements, showPlayedMovements]);
+    }, [showHintMovements, showPlayedMovements, alterPieceColours]);
 
     return (
         <section id="options-section">
@@ -52,6 +54,14 @@ function OptionSection(): React.ReactElement {
                 isChecked={showPlayedMovements}
 
                 setIsChecked={setShowPlayedMovements}
+            />
+
+            <ToggleButton
+                id="alter-piece-colours"
+                text="Alter Piece Colours"
+                isChecked={alterPieceColours}
+
+                setIsChecked={setAlterPieceColours}
             />
         </section>
     );

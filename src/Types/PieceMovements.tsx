@@ -5,8 +5,8 @@ import { CHESS_PIECE_COUNT } from "../Functions/GenerateEmptyGameboard";
 
 type PieceMovement = {
     isCastlable?: boolean;
+    isEnPassant?: boolean;
     isPromotable?: boolean;
-    isSneakAttack?: boolean;
     isFirstMoveOnly?: boolean;
 } & EitherOrNeither<{
     isMoveOnly: boolean;
@@ -44,8 +44,8 @@ function GeneratePawnMovements(): PieceMovements {
         ],
         { x: 1, y: 1, isAttackOnly: true, isPromotable: true },
         { x: -1, y: 1, isAttackOnly: true, isPromotable: true },
-        { x: 1, y: 1, isSneakAttack: true },
-        { x: -1, y: 1, isSneakAttack: true },
+        { x: 1, y: 1, isEnPassant: true },
+        { x: -1, y: 1, isEnPassant: true },
     ];
 }
 

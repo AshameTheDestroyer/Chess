@@ -65,7 +65,7 @@ function EvaluatePieceMovement(props: EvaluatePieceMovementsProps): EvaluatePiec
         checkOccurrence: props.checkOccurrence,
     })) { return pieceMovementEvaluationOnFailed; }
 
-    if (!EvaluateSneakPieceMovement({
+    if (!EvaluateEnPassantPieceMovement({
         cell,
         pieceIsWhite,
         cells: props.cells,
@@ -93,7 +93,7 @@ function EvaluatePieceMovement(props: EvaluatePieceMovementsProps): EvaluatePiec
     })) { return pieceMovementEvaluationOnFailed; }
 
     const cellState: CellState = ((): CellState => {
-        if (props.pieceMovement.isSneakAttack) return CellState.sneak;
+        if (props.pieceMovement.isEnPassant) return CellState.enPassant;
         if (props.pieceMovement.isCastlable) return CellState.castle;
         if (canCanPromote && props.pieceMovement.isPromotable) return CellState.promote;
         if (cellHasFoePiece) return CellState.attack;
@@ -174,7 +174,7 @@ function EvaluateCastlablePieceMovement(props: EvaluateCastlablePieceMovementPro
     return pieceIsOnFirstRow && !kingHasMoved && rookIsOnFirstRow && !rookHasMoved;
 }
 
-type EvaluateSneakPieceMovementProps = {
+type EvaluateEnPassantPieceMovementProps = {
     cell: Cell;
     pieceIsWhite: boolean;
     cells: Array<Array<Cell>>;
@@ -182,18 +182,18 @@ type EvaluateSneakPieceMovementProps = {
     pieceMovementCoordinates: Coordinates;
 };
 
-function EvaluateSneakPieceMovement(props: EvaluateSneakPieceMovementProps): boolean {
-    if (!props.pieceMovement.isSneakAttack) { return true; }
+function EvaluateEnPassantPieceMovement(props: EvaluateEnPassantPieceMovementProps): boolean {
+    if (!props.pieceMovement.isEnPassant) { return true; }
 
     const
         { x: x0, y: y0 }: Coordinates = props.pieceMovementCoordinates,
         foePawnCell: Cell = props.cells[x0][(props.pieceIsWhite) ? y0 - 1 : y0 + 1];
 
-    let pawnToSneakUponExists: boolean = foePawnCell.colouredPiece?.canBeSnuckUpon,
+    let pawnToEnPassantUponExists: boolean = foePawnCell.colouredPiece?.canBeSnuckUpon,
         isPawnFoe: boolean = foePawnCell.colouredPiece?.colour != props.cell.colouredPiece.colour,
         cellIsEmpty: boolean = props.cells[x0][y0].colouredPiece == null;
 
-    return pawnToSneakUponExists && isPawnFoe && cellIsEmpty;
+    return pawnToEnPassantUponExists && isPawnFoe && cellIsEmpty;
 }
 
 type EvaluateCheckDefendingMovementProps = {
