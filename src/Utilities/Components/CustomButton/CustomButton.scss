@@ -59,12 +59,26 @@
     }
 }
 
-@mixin pressing($selector: "") {
+@mixin pressing-output() {
+    transform: translateY(var(--thickness));
 
-    &:is(:active, &-#{$selector}, [disabled]) {
-        transform: translateY(var(--thickness));
+    box-shadow: 0 0 0 var(--background-darker-colour);
+}
 
-        box-shadow: 0 0 0 var(--background-darker-colour);
+@mixin pressing($selector: "", $is-sub-selector: true) {
+
+    @if ($is-sub-selector ==true) {
+
+        &:is(:active, [disabled], &-#{$selector}) {
+            @include pressing-output();
+        }
+    }
+
+    @if ($is-sub-selector !=true) {
+
+        &:is(:active, [disabled], &#{$selector}) {
+            @include pressing-output();
+        }
     }
 }
 

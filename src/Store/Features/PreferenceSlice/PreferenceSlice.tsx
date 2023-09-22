@@ -4,15 +4,15 @@ import { Store } from "../../Store";
 import ChessTheme, { CHESS_THEMES } from "../../../Types/ChessTheme";
 import { GetFromLocalStorage, SetInLocalStorage } from "../../../Utilities/Functions/HandleLocalStorage";
 
+type PreferenceSliceType = {
+    chessTheme: ChessTheme;
+    options: PreferenceOptions;
+};
+
 export type PreferenceOptions = {
     showHintMovements: boolean;
     alterPieceColours: boolean;
     showPlayedMovements: boolean;
-};
-
-type PreferenceSliceType = {
-    chessTheme: ChessTheme;
-    options: PreferenceOptions;
 };
 
 const INITIAL_STATE: PreferenceSliceType = {

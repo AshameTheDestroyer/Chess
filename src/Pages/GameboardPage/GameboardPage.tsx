@@ -151,6 +151,8 @@ export default function GameboardPage(): React.ReactElement {
 
                 setIsOpen={setIsContextMenuOpen}
             />
+
+
         </main>
     );
 }

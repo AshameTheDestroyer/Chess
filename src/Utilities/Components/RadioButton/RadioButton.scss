@@ -1,0 +1,9 @@
+@use "../../../index.scss";
+@use "../CustomButton/CustomButton.scss";
+
+.radio-button {
+
+    &>button {
+        @include CustomButton.pressing($selector: ".button-checked", $is-sub-selector: false);
+    }
+}

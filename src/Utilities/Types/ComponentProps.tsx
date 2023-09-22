@@ -3,7 +3,7 @@ import React from "react";
 type ComponentProps = {
     id?: string;
     className?: string;
-    children?: React.ReactElement | Array<React.ReactElement> | string;
+    children?: React.ReactNode;
 };
 
 export default ComponentProps;

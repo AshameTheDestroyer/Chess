@@ -1,0 +1,91 @@
+@use "../../../index.scss";
+@use "../CustomButton/CustomButton.scss";
+
+.selection-button {
+    --width: 7rem;
+    --toggle-button-ratio: calc(13 / 6);
+
+    display: flex;
+    place-content: center start;
+    place-items: center start;
+    gap: 1rem;
+
+    &>input {
+        position: absolute;
+
+        visibility: hidden;
+    }
+
+    &>button {
+        --thickness: 0.25em;
+
+        position: relative;
+
+        width: calc(var(--width) / var(--toggle-button-ratio));
+        aspect-ratio: 1;
+
+        background-color: var(--background-colour);
+
+        border-radius: 100rem;
+        border: 0.3rem solid var(--background-darker-colour);
+
+        box-shadow: 0 var(--thickness) 0 var(--background-darker-colour);
+
+        margin-bottom: var(--thickness);
+
+        transition:
+            250ms border,
+            250ms transform,
+            250ms box-shadow,
+            100ms background-color,
+        ;
+
+        isolation: isolate;
+
+        overflow: hidden;
+
+        @include CustomButton.pressing();
+        @include CustomButton.disabling();
+        @include CustomButton.hover-shininess();
+
+        &:focus-within {
+            --background-darker-colour: var(--fore-colour);
+        }
+
+        &>span {
+            position: absolute;
+            top: 0;
+            left: 0;
+
+            height: 100%;
+            aspect-ratio: 1;
+
+            background-color: var(--background-darker-colour);
+
+            border-radius: 100%;
+            border: inherit;
+            border-color: var(--background-colour);
+            box-sizing: border-box;
+
+            transition:
+                250ms left,
+                250ms border,
+                250ms transform,
+                250ms background-color,
+            ;
+
+            overflow: hidden;
+
+            z-index: -1;
+        }
+    }
+
+    &-checked {
+        --background-colour: var(--main-colour);
+        --background-darker-colour: hsl(var(--main-colour-raw), 20%);
+
+        &>button>span {
+            background-color: var(--fore-colour);
+        }
+    }
+}

@@ -12,9 +12,13 @@ export default function PreferencePage(): React.ReactElement {
 
     return (
         <main id="preferences-page">
-            <ChessThemePickerDisplayer selectedChessTheme={PreferenceSlice.chessTheme} />
+            <form onSubmit={e => e.preventDefault()}>
+                <ChessThemePickerDisplayer selectedChessTheme={PreferenceSlice.chessTheme} />
 
-            <OptionSection />
+                <OptionSection />
+
+                {/* <Handlers /> */}
+            </form>
         </main>
     );
 }
@@ -66,3 +70,14 @@ function OptionSection(): React.ReactElement {
         </section>
     );
 }
+
+// function Handlers(): React.ReactElement {
+//     const Dispatch = useDispatch();
+//     const PreferenceSlice = useSelector(SelectPreferenceSlice);
+
+//     return (
+//         <section id="handlers-section">
+//             <h1>Handlers</h1>
+//         </section>
+//     );
+// }

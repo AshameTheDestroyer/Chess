@@ -76,7 +76,7 @@ function ChessThemePicker(props: ChessThemePickerProps): React.ReactElement {
                 "--board-colour": props.boardColour,
             } as React.CSSProperties}
         >
-            <h3>{props.name}</h3>
+            <h2>{props.name}</h2>
 
             <figure> {
                 displayedPieceImages.map((displayedPieceImage, i) =>

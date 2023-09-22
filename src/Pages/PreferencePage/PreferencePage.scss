@@ -1,15 +1,26 @@
 #preferences-page {
     --padding: 2rem;
 
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
+    form {
 
-    padding: var(--padding);
-
-    &>section {
         display: flex;
         flex-direction: column;
         gap: 2rem;
+
+        padding: var(--padding);
+
+        &>section {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+
+            h1 {
+                font-size: 175%;
+            }
+
+            h2 {
+                font-size: 125%;
+            }
+        }
     }
 }

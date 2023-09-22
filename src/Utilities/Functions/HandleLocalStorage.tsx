@@ -3,7 +3,8 @@ const UNIQUE_KEY: string = "chess-engine";
 export default UNIQUE_KEY;
 
 export function GetFromLocalStorage<T>(key: string): T {
-    return JSON.parse(localStorage.getItem(`${UNIQUE_KEY}-${key}`)) as T;
+    try { return JSON.parse(localStorage.getItem(`${UNIQUE_KEY}-${key}`)) as T; }
+    catch { return undefined; }
 }
 
 export function SetInLocalStorage<T>(key: string, value: T): void {
