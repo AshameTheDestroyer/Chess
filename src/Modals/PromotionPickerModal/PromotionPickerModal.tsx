@@ -49,26 +49,27 @@ export default function PromotionPickerModal(props: PromotionPickerModalProps): 
             {...props}
         >
             {
-                Object.values(Piece).map((piece, i) =>
-                    IsPiecePromotableTo(piece) &&
-                    <button
-                        key={i}
+                Object.values(Piece)
+                    .filter(piece => IsPiecePromotableTo(piece))
+                    .map((piece, i) =>
+                        <button
+                            key={i}
 
-                        data-piece={piece}
+                            data-piece={piece}
 
-                        onClick={OnButtonClick}
-                    >
-                        {
-                            (props.readyToPromoteCell?.colouredPiece != null) &&
-                            PIECE_IMAGES[`${props.readyToPromoteCell.colouredPiece.colour}_${piece}`]({
-                                className: [
-                                    "piece",
-                                    `piece-${props.readyToPromoteCell.colouredPiece.colour}`,
-                                ].toClassName(),
-                            })
-                        }
-                    </button>
-                )
+                            onClick={OnButtonClick}
+                        >
+                            {
+                                (props.readyToPromoteCell?.colouredPiece != null) &&
+                                PIECE_IMAGES[`${props.readyToPromoteCell.colouredPiece.colour}_${piece}`]({
+                                    className: [
+                                        "piece",
+                                        `piece-${props.readyToPromoteCell.colouredPiece.colour}`,
+                                    ].toClassName(),
+                                })
+                            }
+                        </button>
+                    )
             }
         </Modal>
     );

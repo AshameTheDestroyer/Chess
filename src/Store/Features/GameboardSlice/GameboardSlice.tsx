@@ -3,6 +3,7 @@ import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 import { Store } from "../../Store";
 import Cell from "../../../Types/Cell";
 import "../../../Utilities/Extensions/GroupBy";
+import { PlaySliceType } from "../PlaySlice/PlaySlice";
 import { Piece, PieceColour } from "../../../Types/Piece";
 import AudioManager from "../../../Managers/AudioManager";
 import CheckThreats from "../../../Functions/CheckThreats";
@@ -12,18 +13,24 @@ import SetPieceActionType from "./ActionTypes/SetPieceActionType";
 import SetUpGameActionType from "./ActionTypes/SetUpGameActionType";
 import MovePieceActionType from "./ActionTypes/MovePieceActionType";
 import DecodeFENCode, { INITIAL_GAME_FEN_CODE } from "./ChessDecoder";
+import RepetitionCounterValues from "../PlaySlice/RepetitionCounterValues";
+import { DeepCopy } from "../../../Utilities/Functions/HandleLocalStorage";
 import _DetectEndgameActionType from "./ActionTypes/_DetectEndgameActionType";
 import AlterCellStateActionType from "./ActionTypes/AlterCellStateActionType";
 import GenerateEmptyGameboard from "../../../Functions/GenerateEmptyGameboard";
 import _DetectCheckingActionType from "./ActionTypes/_DetectCheckingActionType";
+import { CoordinatesToChessCoordinates } from "../../../Types/ChessCoordinates";
 import _HandleSubMovementActionType from "./ActionTypes/_HandleSubMovementActionType";
+import MovementRecord, { MovementRecordToString } from "../../../Types/MovementRecord";
+import FiftyRuleMovementCounterValues from "../PlaySlice/FiftyRuleMovementCounterValues";
 import _UpdateKingCheckStateActionType from "./ActionTypes/_UpdateKingCheckStateActionType";
 import _UpdateKingTerritoryCellsActionType from "./ActionTypes/_UpdateKingTerritoryCellsActionType";
 import PieceMovement, { GeneratePieceMovements, PieceMovements } from "../../../Types/PieceMovements";
 import AddPieceMovementToPieceCoordinates from "../../../Functions/AddPieceMovementToPieceCoordinates";
-import _UpdatePlayerFiftyMoveCountersActionType from "./ActionTypes/_UpdatePlayerFiftyMoveCountersActionType";
+import _UpdatePlayerRecordedMovementsActionType from "./ActionTypes/_UpdatePlayerRecordedMovementsActionType";
 import { EvaluatePieceMovementOutputProps, FindKingRookCells } from "../../../Functions/EvaluatePieceMovement";
 import ApplyToPieceValidMovements, { GetPieceValidMovements } from "../../../Functions/ApplyToValidPieceMovements";
+import _UpdatePlayerFiftyMovementCountersActionType from "./ActionTypes/_UpdatePlayerFiftyMovementCountersActionType";
 
 import CellState, {
     AddCellState,
@@ -34,21 +41,44 @@ import CellState, {
     GetMostImportantCellState,
 } from "../../../Types/CellState";
 
+export type PlayerCounter = {
+    counter: number;
+    colour: PieceColour;
+};
+
+export type PlayerRecordedMovement = {
+    colour: PieceColour;
+    movements: Array<MovementRecord>;
+};
+
 type GameboardSliceType = {
     pieceCells: Array<Cell>;
     cells: Array<Array<Cell>>;
     checkOccurrence?: CheckOccurrence;
-    playerFiftyMoveCounters: Array<[PieceColour, number]>;
+    playerCheckCounters: Array<PlayerCounter>;
+    playerFiftyRuleMovementCounters: Array<PlayerCounter>;
+    playerRecordedMovements: Array<PlayerRecordedMovement>;
+    playState?: {
+        playerTurn: PieceColour;
+        repetitionCounterValue: RepetitionCounterValues;
+        fiftyRuleMovementCounterValue: FiftyRuleMovementCounterValues;
+    };
 };
-
-const INITIAL_FIFTY_MOVE_COUNTER_VALUE: number = 50;
 
 const INITIAL_STATE: GameboardSliceType = {
     pieceCells: new Array<Cell>(),
     cells: GenerateEmptyGameboard(),
-    playerFiftyMoveCounters: [
-        [PieceColour.white, INITIAL_FIFTY_MOVE_COUNTER_VALUE],
-        [PieceColour.black, INITIAL_FIFTY_MOVE_COUNTER_VALUE],
+    playerCheckCounters: [
+        { colour: PieceColour.white, counter: 0 },
+        { colour: PieceColour.black, counter: 0 },
+    ],
+    playerFiftyRuleMovementCounters: [
+        { colour: PieceColour.white, counter: 0 },
+        { colour: PieceColour.black, counter: 0 },
+    ],
+    playerRecordedMovements: [
+        { colour: PieceColour.white, movements: [] },
+        { colour: PieceColour.black, movements: [] },
     ],
 };
 
@@ -58,6 +88,11 @@ export const GameboardSlice = createSlice({
 
     reducers: {
         SetUpGame: (state: GameboardSliceType, action: PayloadAction<SetUpGameActionType>): void => {
+            state.playState = {
+                ...action.payload.handlers,
+                playerTurn: (action.payload.binaries.whitePlaysFirst) ? PieceColour.white : PieceColour.black,
+            };
+
             DecodeFENCode(action.payload.FENCode).forEach(cell => {
                 if (cell.colouredPiece == null) { return; }
 
@@ -75,17 +110,21 @@ export const GameboardSlice = createSlice({
             AudioManager.Play("/Chess-Engine/src/assets/Audios/game-start.mp3");
         },
 
-        SetUpInitialGame: (state: GameboardSliceType): void => {
+        SetUpInitialGame: (state: GameboardSliceType, action: PayloadAction<PlaySliceType>): void => {
             GameboardSlice.caseReducers.SetUpGame(state, {
-                payload: { FENCode: INITIAL_GAME_FEN_CODE },
+                payload: { ...action.payload, FENCode: INITIAL_GAME_FEN_CODE },
                 type: "gameboard/SetUpGame",
             });
         },
 
         ResetGameboard: (state: GameboardSliceType): void => {
+            state.playState = null;
             state.checkOccurrence = null;
-            state.cells = INITIAL_STATE.cells;
-            state.pieceCells = INITIAL_STATE.pieceCells;
+            state.cells = DeepCopy(INITIAL_STATE.cells);
+            state.pieceCells = DeepCopy(INITIAL_STATE.pieceCells);
+            state.playerCheckCounters = DeepCopy(INITIAL_STATE.playerCheckCounters);
+            state.playerRecordedMovements = DeepCopy(INITIAL_STATE.playerRecordedMovements);
+            state.playerFiftyRuleMovementCounters = DeepCopy(INITIAL_STATE.playerFiftyRuleMovementCounters);
         },
 
         AddStateToCell: (state: GameboardSliceType, action: PayloadAction<AlterCellStateActionType>): void => {
@@ -93,10 +132,16 @@ export const GameboardSlice = createSlice({
             state.cells[x][y].state = AddCellState(state.cells[x][y].state, action.payload.cellState);
 
             let cellHasPiece: boolean = state.cells[x][y].colouredPiece != null,
-                cellIsReady: boolean = action.payload.cellState == CellState.ready;
+                cellIsReady: boolean = action.payload.cellState == CellState.ready,
+                itsPlayersTurn: boolean = state.playState.playerTurn == state.cells[x][y].colouredPiece?.colour;
 
             if (cellIsReady) { GameboardSlice.caseReducers._ResetMovableCells(state); }
             if (!cellHasPiece || !cellIsReady) { return; }
+
+            if (!itsPlayersTurn) {
+                AudioManager.Play("/Chess-Engine/src/assets/Audios/illegal.mp3");
+                return;
+            }
 
             GameboardSlice.caseReducers._GeneratePieceMovements(state, action);
         },
@@ -146,13 +191,13 @@ export const GameboardSlice = createSlice({
                 type: "gameboard/_HandleCastlableMovement",
             });
 
-            GameboardSlice.caseReducers._UpdatePlayerFiftyMoveCounters(state, {
+            GameboardSlice.caseReducers._UpdatePlayerFiftyMovementCounters(state, {
                 payload: {
                     colour: fromCell.colouredPiece.colour,
                     pieceHasBeenAttacked: toCell.colouredPiece != null,
                     pawnHasMoved: fromCell.colouredPiece.piece == Piece.pawn,
                 },
-                type: "gameboard/_UpdatePlayerFiftyMoveCounters"
+                type: "gameboard/_UpdatePlayerFiftyMovementCounters"
             });
 
             toCell.colouredPiece = fromCell.colouredPiece;
@@ -175,6 +220,20 @@ export const GameboardSlice = createSlice({
                 payload: { fromCell, toCell },
                 type: "gameboard/_HandlePostMovementActions",
             });
+
+            if (action.payload.doesntRecordMovement) { return; }
+
+            state.playState.playerTurn = (state.playState.playerTurn == PieceColour.white) ? PieceColour.black : PieceColour.white;
+
+            GameboardSlice.caseReducers._UpdatePlayerRecordedMovements(state, {
+                payload: {
+                    to: toCell,
+                    from: fromCell,
+                    movingPiece: toCell.colouredPiece,
+                    hasChecked: state.checkOccurrence != null,
+                },
+                type: "gameboard/_UpdatePlayerRecordedMovements",
+            });
         },
 
         SetPiece: (state: GameboardSliceType, action: PayloadAction<SetPieceActionType>): void => {
@@ -191,16 +250,26 @@ export const GameboardSlice = createSlice({
                 });
             }
 
-            if (action.payload.isPromoting) {
-                AudioManager.Play("/Chess-Engine/src/assets/Audios/promote.mp3");
-            }
-
-            if (action.payload.doesntTriggerDetectChecking) { return; }
-
             GameboardSlice.caseReducers._HandlePostMovementActions(state, {
-                payload: { fromCell: state.cells[x][y], toCell: state.cells[x][y] },
+                payload: {
+                    toCell: state.cells[x][y],
+                    fromCell: state.cells[x][y],
+                    doesntTriggerDetectChecking: action.payload.doesntTriggerDetectChecking,
+                },
                 type: "gameboard/_HandlePostMovementActions",
             });
+
+            if (action.payload.isPromoting) {
+                AudioManager.Play("/Chess-Engine/src/assets/Audios/promote.mp3");
+
+                GameboardSlice.caseReducers._UpdatePlayerRecordedMovements(state, {
+                    payload: {
+                        movingPiece: state.cells[x][y].colouredPiece,
+                        pawnPromotedTo: action.payload.colouredPiece.piece,
+                    },
+                    type: "gameboard/_UpdatePlayerRecordedMovements",
+                });
+            }
         },
 
         _ResetMovableCells: (state: GameboardSliceType): void => {
@@ -213,6 +282,7 @@ export const GameboardSlice = createSlice({
                 { x, y }: Coordinates = action.payload,
                 pieceMovements: PieceMovements = GeneratePieceMovements(state.cells[x][y].colouredPiece.piece);
 
+            let validMovementCount: number = 0;
             ApplyToPieceValidMovements({
                 x,
                 y,
@@ -224,8 +294,11 @@ export const GameboardSlice = createSlice({
 
                     const { x: x0, y: y0 } = evaluationProps;
                     state.cells[x0][y0].state = AddCellState(state.cells[x0][y0].state, evaluationProps.cellState);
+                    validMovementCount++;
                 },
             });
+
+            if (validMovementCount == 0) { AudioManager.Play("/Chess-Engine/src/assets/Audios/illegal.mp3"); }
         },
 
         _UpdateKingTerritoryCells: (state: GameboardSliceType, action: PayloadAction<_UpdateKingTerritoryCellsActionType>): void => {
@@ -288,7 +361,11 @@ export const GameboardSlice = createSlice({
                 rookTargetCell: Cell = (kingHasMovedToLeft) ? state.cells[x2 + 1][y2] : state.cells[x2 - 1][y2];
 
             GameboardSlice.caseReducers.MovePiece(state, {
-                payload: { from: rookCell, to: rookTargetCell },
+                payload: {
+                    from: rookCell,
+                    to: rookTargetCell,
+                    doesntRecordMovement: true,
+                },
                 type: "gameboard/MovePiece",
             });
         },
@@ -313,6 +390,8 @@ export const GameboardSlice = createSlice({
 
                 action.payload.toCell.colouredPiece.canBeSnuckUpon = !pawnHasMoved && pawnHasMovedTwoCells;
             }
+
+            if (action.payload.doesntTriggerDetectChecking) { return; }
 
             if (pieceRecordsMovements) { action.payload.toCell.colouredPiece.hasMoved ||= true; }
 
@@ -345,17 +424,39 @@ export const GameboardSlice = createSlice({
             AudioManager.Play(AUDIO_SOURCE);
         },
 
-        _UpdatePlayerFiftyMoveCounters: (state: GameboardSliceType, action: PayloadAction<_UpdatePlayerFiftyMoveCountersActionType>): void => {
-            const playerFiftyMoveCounter: [PieceColour, number] = state.playerFiftyMoveCounters
-                .find(playerFiftyMoveCounter => playerFiftyMoveCounter[0] == action.payload.colour);
+        _UpdatePlayerRecordedMovements: (state: GameboardSliceType, action: PayloadAction<_UpdatePlayerRecordedMovementsActionType>): void => {
+            const playerRecordedMovements: PlayerRecordedMovement = state.playerRecordedMovements
+                .find(playerCheckCounter => playerCheckCounter.colour == action.payload.movingPiece.colour);
+
+            if (action.payload.pawnPromotedTo != null) {
+                playerRecordedMovements.movements[playerRecordedMovements.movements.length - 1] = {
+                    ...playerRecordedMovements.movements.at(-1),
+
+                    hasChecked: state.checkOccurrence != null,
+                    pawnPromotedTo: action.payload.pawnPromotedTo,
+                };
+            } else {
+                playerRecordedMovements.movements.push({
+                    hasChecked: action.payload.hasChecked,
+                    movingPiece: action.payload.movingPiece.piece,
+                    to: CoordinatesToChessCoordinates(action.payload.to),
+                    from: CoordinatesToChessCoordinates(action.payload.from),
+                });
+            }
+
+            GameboardSlice.caseReducers._DetectRepetition(state);
+        },
+
+        _UpdatePlayerFiftyMovementCounters: (state: GameboardSliceType, action: PayloadAction<_UpdatePlayerFiftyMovementCountersActionType>): void => {
+            const playerFiftyMovementCounter: PlayerCounter = state.playerFiftyRuleMovementCounters
+                .find(playerFiftyMovementCounter => playerFiftyMovementCounter.colour == action.payload.colour);
 
             if (action.payload.pawnHasMoved || action.payload.pieceHasBeenAttacked) {
-                playerFiftyMoveCounter[1] = INITIAL_FIFTY_MOVE_COUNTER_VALUE;
-
+                playerFiftyMovementCounter.counter = 0;
                 return;
             }
 
-            playerFiftyMoveCounter[1]--;
+            playerFiftyMovementCounter.counter++;
         },
 
         _UpdateKingCheckingState: (state: GameboardSliceType, action: PayloadAction<_UpdateKingCheckStateActionType>): void => {
@@ -372,11 +473,17 @@ export const GameboardSlice = createSlice({
             }
 
             kingCell.state = AddCellState(kingCell.state, CellState.checked);
+
             AudioManager.Play("/src/assets/Audios/check.mp3");
+
             state.checkOccurrence ??= {
                 kingCell,
                 threateningCellLines,
             };
+
+            state.playerCheckCounters
+                .find(playerCheckCounter => playerCheckCounter.colour != kingCell.colouredPiece.colour)
+                .counter++;
         },
 
         _DetectChecking: (state: GameboardSliceType, action: PayloadAction<_DetectCheckingActionType>): void => {
@@ -457,8 +564,7 @@ export const GameboardSlice = createSlice({
         },
 
         _DetectDraw: (state: GameboardSliceType): void => {
-            GameboardSlice.caseReducers._DetectRepetition(state);
-            GameboardSlice.caseReducers._DetectFiftyMoveRule(state);
+            GameboardSlice.caseReducers._DetectFiftyMovementRule(state);
             GameboardSlice.caseReducers._DetectInsufficientMaterials(state);
         },
 
@@ -474,9 +580,9 @@ export const GameboardSlice = createSlice({
             }
         },
 
-        _DetectFiftyMoveRule: (state: GameboardSliceType): void => {
-            for (const [_playerColour, fiftyMoveCounter] of state.playerFiftyMoveCounters) {
-                if (fiftyMoveCounter != 0) { return; }
+        _DetectFiftyMovementRule: (state: GameboardSliceType): void => {
+            for (const { colour: _playerColour, counter: fiftyMovementCounter } of state.playerFiftyRuleMovementCounters) {
+                if (fiftyMovementCounter != state.playState.fiftyRuleMovementCounterValue) { continue; }
 
                 alert("Draw by Fifty Move Rule.");
                 AudioManager.Play("/Chess-Engine/src/assets/Audios/stalemate.mp3");
@@ -485,7 +591,37 @@ export const GameboardSlice = createSlice({
         },
 
         _DetectRepetition: (state: GameboardSliceType): void => {
+            const MINIMUM_RECORDED_MOVEMENT_COUNT: number = state.playerRecordedMovements
+                .reduce((minimumRecordedMovementCount, playerRecordedMovements) =>
+                    minimumRecordedMovementCount =
+                    (minimumRecordedMovementCount > playerRecordedMovements.movements.length) ?
+                        playerRecordedMovements.movements.length : minimumRecordedMovementCount
+                    , Infinity);
 
+            if (MINIMUM_RECORDED_MOVEMENT_COUNT < state.playState.repetitionCounterValue * 2 - 1) { return; }
+
+            const playerRepetitionCounters: Array<PlayerCounter> = state.playerRecordedMovements
+                .map(playerRecordedMovements => ({ colour: playerRecordedMovements.colour, counter: 0 }));
+
+            state.playerRecordedMovements.forEach((playerRecordedMovements, i) => {
+                const lastRecordedMovement: MovementRecord = playerRecordedMovements.movements.at(-1);
+
+                for (let j: number = state.playState.repetitionCounterValue - 1,
+                    k: number = playerRecordedMovements.movements.length - 1; j >= 0; j--, k -= 2) {
+                    if (MovementRecordToString(playerRecordedMovements.movements[k]) == MovementRecordToString(lastRecordedMovement)) {
+                        playerRepetitionCounters[i].counter++;
+                    }
+                }
+            });
+
+            const REPETITION_COUNTER_VALUE: number = playerRepetitionCounters
+                .reduce((repetitionCounterValue, playerRepetitionCounter) =>
+                    repetitionCounterValue += playerRepetitionCounter.counter, 0);
+
+            if (REPETITION_COUNTER_VALUE >= state.playState.repetitionCounterValue * 2 - 1) {
+                alert("Draw by Repetition.");
+                AudioManager.Play("/Chess-Engine/src/assets/Audios/stalemate.mp3");
+            }
         },
     },
 });

@@ -1,7 +1,7 @@
 @use "../../index.scss";
 
 #not-found-404-page {
-    --padding: 5rem;
+    --padding: 5rem !important;
 
     display: flex;
     flex-direction: column;

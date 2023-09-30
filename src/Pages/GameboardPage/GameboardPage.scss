@@ -9,19 +9,21 @@ $cell-states: playedFrom, playedTo, move, attack, promote, castle, enPassant, ch
 $cell-state-colours: #ffd700, #ffd700, #0044ff, #f31818, #10f568, #9b0ba8, #9b0ba8, #801616, #ff4500, #20b2aa;
 
 #gameboard-body {
-    --padding: 1rem;
+    --padding: 1rem !important;
 
     position: relative;
+
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--padding) * 2);
 
     padding: var(--padding);
 
     #gameboard {
+        $cell-pseudo-element-offset: 0.1rem;
         --padding-: 0rem;
 
-        position: absolute;
-        left: 50%;
-        transform: translate(-50%);
-
+        position: relative;
         width: calc($gameboard-width - var(--padding) * 2);
         aspect-ratio: 1;
 
@@ -30,6 +32,7 @@ $cell-state-colours: #ffd700, #ffd700, #0044ff, #f31818, #10f568, #9b0ba8, #9b0b
         grid-template-rows: repeat(8, 1fr);
         place-content: center;
         place-items: center;
+        place-self: center;
         gap: $gameboard-gap;
 
         padding: var(--padding-);
@@ -45,6 +48,37 @@ $cell-state-colours: #ffd700, #ffd700, #0044ff, #f31818, #10f568, #9b0ba8, #9b0b
 
             &:not(:hover, :focus-within) {
                 transform: scale(1) !important;
+            }
+        }
+
+        &.gameboard-rotated {
+            transform: rotate(180deg);
+
+            .cell {
+
+                &::before,
+                &::after {
+                    transform: rotate(180deg) scale(var(--scale-modifier)) !important;
+                }
+
+                svg {
+                    transform: rotate(180deg);
+                }
+            }
+
+            #promotion-picker-modal {
+                animation-name: modal-rotated-entrance;
+
+                @keyframes modal-rotated-entrance {
+
+                    from {
+                        transform: translate(-50%, -50%) scale(0) rotate(180deg);
+                    }
+
+                    to {
+                        transform: translate(-50%, -50%) scale(1) rotate(180deg);
+                    }
+                }
             }
         }
 
@@ -92,7 +126,6 @@ $cell-state-colours: #ffd700, #ffd700, #0044ff, #f31818, #10f568, #9b0ba8, #9b0b
 
             &:nth-child(8n + 1),
             &:nth-child(n + #{calc(8 * 8 - 8 + 1)}) {
-                $offset: 0.1rem;
                 --margin-modifier-left: -0.95;
                 --margin-modifier-bottom: -1.15;
                 --scale-modifier: 1;
@@ -103,6 +136,7 @@ $cell-state-colours: #ffd700, #ffd700, #0044ff, #f31818, #10f568, #9b0ba8, #9b0b
                     font-size: 75%;
 
                     position: absolute;
+                    transform: scale(var(--scale-modifier));
 
                     display: flex;
                     flex-direction: column;
@@ -115,15 +149,13 @@ $cell-state-colours: #ffd700, #ffd700, #0044ff, #f31818, #10f568, #9b0ba8, #9b0b
                 }
 
                 &::before {
-                    bottom: $offset;
-                    left: $offset;
-                    transform: scale(var(--scale-modifier));
+                    top: $cell-pseudo-element-offset;
+                    left: $cell-pseudo-element-offset;
                 }
 
                 &::after {
-                    left: $offset;
-                    bottom: $offset;
-                    transform: scale(var(--scale-modifier));
+                    right: $cell-pseudo-element-offset;
+                    bottom: $cell-pseudo-element-offset;
                 }
             }
 
@@ -133,17 +165,6 @@ $cell-state-colours: #ffd700, #ffd700, #0044ff, #f31818, #10f568, #9b0ba8, #9b0b
 
             &:nth-child(n + #{calc(8 * 8 - 8 + 1)})::after {
                 content: attr(data-character);
-            }
-
-            &:nth-child(8n + 1):nth-child(n + #{calc(8 * 8 - 8 + 1)}) {
-
-                &::before {
-                    content: attr(data-number) attr(data-character);
-                }
-
-                &::after {
-                    content: none;
-                }
             }
 
             svg {
@@ -158,16 +179,26 @@ $cell-state-colours: #ffd700, #ffd700, #0044ff, #f31818, #10f568, #9b0ba8, #9b0b
             }
         }
     }
+
+    #information-section {
+        display: flex;
+        flex-grow: 1;
+        flex-direction: column;
+        place-content: space-between start;
+        place-items: space-between start;
+    }
 }
 
 #dragged-piece {
+    $size: calc(($gameboard-width - $gameboard-gap * 2) / 8 * $piece-size);
+
     position: absolute;
     top: -100%;
     left: -100%;
     transform: translate(-50%, -50%);
 
-    width: calc(($gameboard-width - $gameboard-gap * 2) / 8 * $piece-size);
-    aspect-ratio: 1;
+    width: $size;
+    height: $size;
 
     pointer-events: none;
 
@@ -199,6 +230,20 @@ svg.piece {
         --padding-: 1.25em !important;
 
         border-color: var(--light-colour) !important;
+
+        &.gameboard-rotated {
+
+            .cell {
+
+                &::before {
+                    bottom: 50% !important;
+                }
+
+                &::after {
+                    right: 50% !important;
+                }
+            }
+        }
 
         .cell {
 
@@ -235,10 +280,19 @@ svg.piece {
 
 @media (min-width: index.$first-screen-width) {
 
-    #gameboard {
-        left: var(--padding) !important;
-        transform: translate(0, 0) !important;
+    #gameboard-body {
+        flex-direction: row;
+        flex-wrap: wrap;
+        place-content: space-between;
+        place-items: space-between;
 
-        background-color: red;
+        #information-section {
+            max-height: calc(100vh - var(--header-height) - var(--padding) * 2);
+
+            // ENHANCE: When adding new things to the information section, remove this.
+            #chess-movement-recorder {
+                width: 50%;
+            }
+        }
     }
 }

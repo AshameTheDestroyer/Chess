@@ -77,3 +77,12 @@ Today we're not making any tedious Chess Game, no baby today we're making A WHOL
 6. Also kings cannot interfere with any cell that's been territorialized by anyone else than them, thus no king can stick to another king's back.
 7. Currently a checkmate or a draw only triggers an alert, but that'll be implemented later on.
 8. Renamed the Sneak Movement into an En Passant Movement.
+
+### Stalemating:
+1. Finally, the game's literally complete, but not as much can be said to the whole website, nor engine.
+2. All of kind of draws are now possible and fully functional.
+3. Whenever a player runs outta available movements, a stalemate is thrown.
+4. If a player started playing dumb, now they'll have only a certain amount of movements, obeying the Fifty Movement Rule.
+5. Whenever players are fooling one another and repeatedly playing same movements, a certain amount of repetition is allowed now, obeying the Repetition Rule.
+6. A table of all recorded played movements is now available, that shows all player's movements, from and to where they've played it, its number, and how it turned out, (it's not as general as intended yet).
+7. A form to register all the playing states before actually start playing.

@@ -11,7 +11,8 @@ type RadioButtonProps<T extends RadioButtonValueType> =
 export default function RadioButton<T extends RadioButtonValueType>(props: RadioButtonProps<T>): React.ReactElement {
     return (
         <SelectionButton
-            {...props} type="radio-button"
+            {...props}
+            type="radio-button"
 
             onClick={_e => props.setIsChecked(_previousValue => true)}
             onChange={_e => props.setIsChecked(_previousValue => true)}

@@ -50,8 +50,9 @@ export default function SelectionButton<T extends RadioButtonValueType>(props: S
                     props.isChecked && `button-checked`,
                 ].toClassName()}
 
-                role={(props.type == "toggle-button") ? "checkbox" : "radio"}
+                type="button"
                 disabled={props.isDisabled}
+                role={(props.type == "toggle-button") ? "checkbox" : "radio"}
 
                 onClick={props.onClick}
             >

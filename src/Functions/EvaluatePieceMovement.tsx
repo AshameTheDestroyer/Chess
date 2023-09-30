@@ -59,8 +59,8 @@ function EvaluatePieceMovement(props: EvaluatePieceMovementsProps): EvaluatePiec
 
     if (!EvaluateCastlablePieceMovement({
         pieceIsWhite,
-        cells: props.cells,
         pieceCell: cell,
+        cells: props.cells,
         pieceMovement: props.pieceMovement,
         checkOccurrence: props.checkOccurrence,
     })) { return pieceMovementEvaluationOnFailed; }
@@ -167,11 +167,12 @@ function EvaluateCastlablePieceMovement(props: EvaluateCastlablePieceMovementPro
         pieceIsOnFirstRow: boolean = (props.pieceIsWhite) ? props.pieceCell.y == 0 : props.pieceCell.y == CHESS_PIECE_COUNT - 1,
         moveIsToTheLeft: boolean = (props.pieceIsWhite) ? props.pieceMovement.x < 0 : props.pieceMovement.x > 0,
         rookHasMoved: boolean = (moveIsToTheLeft) ? leftRookCell?.colouredPiece.hasMoved : rightRookCell?.colouredPiece.hasMoved,
-        rookIsOnFirstRow: boolean = ((moveIsToTheLeft) ?
+        rookIsAccessible: boolean = !moveIsToTheLeft || props.cells[leftRookCell?.x + 1]?.[leftRookCell?.y]?.colouredPiece == null,
+        rookIsOnFirstRow: boolean = (moveIsToTheLeft) ?
             ((props.pieceIsWhite) ? leftRookCell?.y == 0 : leftRookCell?.y == CHESS_PIECE_COUNT - 1) :
-            ((props.pieceIsWhite) ? rightRookCell?.y == 0 : rightRookCell?.y == CHESS_PIECE_COUNT - 1));
+            ((props.pieceIsWhite) ? rightRookCell?.y == 0 : rightRookCell?.y == CHESS_PIECE_COUNT - 1);
 
-    return pieceIsOnFirstRow && !kingHasMoved && rookIsOnFirstRow && !rookHasMoved;
+    return pieceIsOnFirstRow && !kingHasMoved && rookIsOnFirstRow && !rookHasMoved && rookIsAccessible;
 }
 
 type EvaluateEnPassantPieceMovementProps = {

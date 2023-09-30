@@ -28,8 +28,8 @@
     @keyframes context-menu-entrance {
 
         from {
-            grid-template-columns: 0fr;
-            grid-template-rows: 0fr;
+            grid-template-columns: 0.01fr;
+            grid-template-rows: 0.01fr;
         }
 
         to {
@@ -41,7 +41,7 @@
     @keyframes context-menu-entrance-only-columns {
 
         from {
-            grid-template-columns: 0fr;
+            grid-template-columns: 0.01fr;
         }
 
         to {

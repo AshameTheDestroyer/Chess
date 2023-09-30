@@ -1,66 +1,23 @@
 import React from "react";
 import { useSelector } from "react-redux";
 
-import useContextMenu from "../../Utilities/Hooks/useContextMenu";
 import useGeneratePieceImages from "../../Hooks/useGeneratePieceImages";
 import CustomButton from "../../Utilities/Components/CustomButton/CustomButton";
 import { SelectPreferenceSlice } from "../../Store/Features/PreferenceSlice/PreferenceSlice";
 import CustomButtonDisplayer from "../../Utilities/Components/CustomButtonDisplayer/CustomButtonDisplayer";
-import ContextMenu, { ContextMenuGroupWithSelector } from "../../Utilities/Components/ContextMenu/ContextMenu";
 
 import "./HomePage.scss";
 
 import PIECE_IMAGES from "../GameboardPage/PieceImages";
 
-import chess_icon from "../../assets/Icons/chess.svg";
-
 export default function HomePage(): React.ReactElement {
     const PreferenceSlice = useSelector(SelectPreferenceSlice);
-
-    const [
-        isContextMenuOpen,
-        contextMenuCoordinates,
-        _contextMenuClickedElement,
-        setIsContextMenuOpen,
-        _setContextMenuCoordinates,
-        _setContextMenuClickedElement,
-    ] = useContextMenu();
 
     const [displayedPieceImages, _setDisplayedPieceImages] = useGeneratePieceImages({
         shuffle: true,
         alternateColours: true,
         displayedPieceCount: 4,
     });
-
-    const groups: Array<ContextMenuGroupWithSelector> = [{
-        options: [{
-            name: "Play",
-            iconURL: chess_icon,
-            keyShortcut: "Ctrl+P",
-            onClick: _e => { console.log("Let's Play!"); },
-        }, {
-            name: "WTF",
-            opensTab: "wtf-tab",
-        }],
-    }, {
-        options: [{
-            name: "Call API",
-            onClick: _e => { console.log("API's Called."); },
-        }, {
-            name: "Post to API",
-            keyShortcut: "Ctrl+Shift+X",
-            onClick: _e => { console.log("API's Been Posted To.") },
-        }, {
-            name: "Nothing",
-            opensTab: "nothing-tab",
-        }],
-    }, {
-        tabName: "wtf-tab",
-        options: [{
-            name: "WTF",
-            onClick: _e => { console.log("WTFFFFFF.") },
-        }],
-    }];
 
     return (
         <main id="home-page">
@@ -101,19 +58,23 @@ export default function HomePage(): React.ReactElement {
                     } </figure>
 
                     <CustomButtonDisplayer>
-                        <CustomButton link="/Learn">Learn More</CustomButton>
-                        <CustomButton isEmphasized isArrowed iconPlace="right" link="/Gameboard">Play Now</CustomButton>
+                        <CustomButton
+                            link="/Learn"
+
+                            children="Learn More"
+                        />
+
+                        <CustomButton
+                            isArrowed
+                            isEmphasized
+                            link="/Play"
+                            iconPlace="right"
+
+                            children="Play Now"
+                        />
                     </CustomButtonDisplayer>
                 </div>
             </section>
-
-            <ContextMenu
-                groups={groups}
-                isOpen={isContextMenuOpen}
-                {...contextMenuCoordinates}
-
-                setIsOpen={setIsContextMenuOpen}
-            />
         </main>
     );
 }

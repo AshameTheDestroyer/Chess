@@ -1,0 +1,38 @@
+@use "../../index.scss";
+
+#play-page {
+    --padding: 4rem;
+
+    display: flex;
+    flex-direction: column;
+    place-content: center;
+    place-items: center;
+
+    padding: var(--padding);
+
+    form {
+        display: flex;
+        flex-direction: column;
+        gap: 4rem;
+
+        .custom-button-displayer {
+            width: 100%;
+        }
+    }
+}
+
+@media (min-width: index.$first-screen-width) {
+
+    #play-page {
+
+        form {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+
+            &>section:first-child,
+            .custom-button-displayer {
+                grid-column: 1 / -1;
+            }
+        }
+    }
+}

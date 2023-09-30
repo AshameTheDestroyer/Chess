@@ -40,7 +40,7 @@
             border-bottom: solid 0.2rem var(--background-colour);
         }
 
-        &:is(:hover, :focus-within) {
+        &:is(:hover, :focus-within, .selected) {
             transform: scale(1.05);
 
             background-color: var(--background-colour);
@@ -81,7 +81,7 @@
             border-bottom: none !important;
             border-radius: 1.5rem;
 
-            &:is(:hover, :focus-within) {
+            &:is(:hover, :focus-within, .selected) {
                 background-color: var(--background-colour);
             }
         }

@@ -18,7 +18,7 @@ export default function Header(): React.ReactElement {
             <NavigationBar
                 isOpen={isNavigationBarOpen}
                 anchors={[
-                    "Gameboard",
+                    "Play",
                     "Puzzles",
                     "Learn",
                     "Preference",

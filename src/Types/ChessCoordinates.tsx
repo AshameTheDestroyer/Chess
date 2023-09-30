@@ -15,3 +15,7 @@ export function CoordinatesToChessCoordinates(coordinates: Coordinates): ChessCo
         character: String.fromCharCode(A_CHAR_CODE + (coordinates.x)),
     };
 }
+
+export function ChessCoordinatesToString(chessCoordinates: ChessCoordinates): string {
+    return `${chessCoordinates.character}${chessCoordinates.number}`;
+}

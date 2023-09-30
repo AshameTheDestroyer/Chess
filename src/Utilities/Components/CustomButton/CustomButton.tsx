@@ -7,9 +7,11 @@ import ComponentProps, { ComponentEventProps } from "../../Types/ComponentProps"
 import "./CustomButton.scss";
 
 export type IconPlace = "left" | "right";
+export type ButtonType = "button" | "submit" | "reset";
 
 type CustomButtonProps = {
     link?: string;
+    type?: ButtonType;
     role?: React.AriaRole;
     isEmphasized?: boolean;
 
@@ -54,6 +56,7 @@ export default function CustomButton(props: CustomButtonProps): React.ReactEleme
 
             disabled={props.isDisabled}
             role={props.role ?? "button"}
+            type={props.type ?? "button"}
             data-icon-place={props.iconPlace}
 
             {...props.events}

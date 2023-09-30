@@ -39,9 +39,13 @@ export default ColouredPiece;
 
 export function IsPiecePromotableTo(piece: Piece): boolean {
     return [
-        Piece.knight,
-        Piece.bishop,
         Piece.rook,
         Piece.queen,
+        Piece.knight,
+        Piece.bishop,
     ].includes(piece);
+}
+
+export function GetPieceLetter(piece: Piece): string {
+    return (piece == Piece.knight) ? piece[1] : piece[0];
 }

@@ -2,8 +2,6 @@
 
 #promotion-picker-modal-background {
     background-color: var(--half-transparent);
-
-    filter: blur(1rem);
 }
 
 #promotion-picker-modal {
@@ -18,7 +16,7 @@
 
     background-color: var(--board-colour);
 
-    border: 0.2rem solid var(--fore-colour);
+    border: 0.2rem solid var(--light-colour);
 
     &>button {
         $size: 4rem;

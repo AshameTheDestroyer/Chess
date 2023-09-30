@@ -1,7 +1,8 @@
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-import ChessTheme, { CHESS_THEMES } from "../../Types/ChessTheme";
+import ChessTheme from "../../Types/ChessTheme";
+import CHESS_THEMES from "../../Constants/ChessThemes";
 import useGeneratePieceImages from "../../Hooks/useGeneratePieceImages";
 import CustomButton from "../../Utilities/Components/CustomButton/CustomButton";
 import { SelectPreferenceSlice, SetChessTheme } from "../../Store/Features/PreferenceSlice/PreferenceSlice";

@@ -11,7 +11,7 @@ String.prototype.trimAll = function (): string {
     do {
         previousValue = currentValue;
         currentValue = currentValue.replaceAll("  ", " ");
-    } while (previousValue != currentValue)
+    } while (previousValue != currentValue);
 
     return currentValue;
 }

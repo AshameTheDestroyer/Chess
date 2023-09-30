@@ -6,7 +6,7 @@
 
     position: sticky;
     top: 0;
-    height: calc(var(--header-height) - $padding * 2);
+    height: calc(var(--header-height) - $padding * 2 + $border-bottom-thickness);
 
     display: grid;
     grid-template-columns: auto 1fr;
@@ -21,7 +21,7 @@
 
     border-bottom: var(--background-colour) $border-bottom-thickness solid;
 
-    z-index: 3;
+    z-index: 4;
 
     #logo {
         --font-border-thickness: 0.09em;

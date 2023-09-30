@@ -5,7 +5,7 @@ interface Array<T> {
 }
 
 Array.prototype.permute = function <T>(): Array<Array<T>> {
-    let array: Array<T> = this as Array<T>;
+    const array: Array<T> = this as Array<T>;
 
     if (!array.length) { return []; }
     if (array.length == 1) { return [array]; }
@@ -16,7 +16,7 @@ Array.prototype.permute = function <T>(): Array<Array<T>> {
         ];
     }
 
-    let fullArray: Array<Array<T>> = [];
+    const fullArray: Array<Array<T>> = [];
     for (let i: number = 0; i < array.length; i++) {
         let restArray: Array<Array<T>> =
             array.filter((_, i_) => i != i_).permute();

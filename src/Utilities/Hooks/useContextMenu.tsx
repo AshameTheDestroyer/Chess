@@ -27,7 +27,7 @@ function useContextMenu(): [
         setIsContextMenuOpen(false);
         setTimeout(() => setIsContextMenuOpen(true));
 
-        setContextMenuCoordinates({ x: e.x, y: e.y });
+        setContextMenuCoordinates({ x: e.pageX, y: e.pageY });
         setContextMenuClickedElement(e.target as HTMLElement);
 
         return false;

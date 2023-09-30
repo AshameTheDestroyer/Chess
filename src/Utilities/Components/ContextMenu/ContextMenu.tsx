@@ -53,16 +53,9 @@ export default function ContextMenu(props: ContextMenuProps): React.ReactElement
     const [previousOpenTabs, setPreviousOpenTabs] = useState<Array<string>>([]);
     const contextMenuRef = useRef<HTMLDivElement>(null);
 
-    useEffect(() => {
-        if (props.isOpen) { return; }
-
-        setOpenTab(null);
-        setPreviousOpenTabs([]);
-    }, [props.isOpen]);
-
-    useLayoutEffect(() => {
-        return () => RemoveExtraContextMenuPreviousButtons();
-    }, [openTab]);
+    const
+        PAGE_WIDTH: number = window.innerWidth,
+        PAGE_HEIGHT: number = window.innerHeight;
 
     const previousContextMenuButton: ContextMenuButtonWithSelector = {
         name: PREVIOUS_CONTEXT_MENU_BUTTON_NAME,
@@ -76,6 +69,26 @@ export default function ContextMenu(props: ContextMenuProps): React.ReactElement
 
     const groups: Array<ContextMenuGroupWithSelector> = [previousContextMenuGroup, ...props.groups];
 
+    useEffect(() => {
+        if (props.isOpen) { return; }
+
+        setOpenTab(null);
+        setPreviousOpenTabs([]);
+    }, [props.isOpen]);
+
+    useLayoutEffect(() => {
+        if (!props.isOpen) { return; }
+
+        SetSize(0, 0);
+        RecorrectSize();
+    }, [props.isOpen]);
+
+    useLayoutEffect(() => {
+        if (!props.isOpen) { return; }
+
+        return () => { RemoveExtraContextMenuPreviousButtons(); };
+    }, [openTab]);
+
     function RefreshWidth(): void {
         const contextMenu: HTMLDivElement = contextMenuRef.current;
         if (contextMenu == null) { return; }
@@ -86,7 +99,30 @@ export default function ContextMenu(props: ContextMenuProps): React.ReactElement
 
     function RemoveExtraContextMenuPreviousButtons(): void {
         Array.from(document.querySelectorAll("#context-menu-previous-button"))
-            .forEach((contextMenuPreviousButton, i) => i > 0 && contextMenuPreviousButton.remove());
+            .forEach((contextMenuPreviousButton, i) => (i > 0) && contextMenuPreviousButton.remove());
+    }
+
+    function RecorrectSize(): void {
+        const
+            TO_PERCENT: number = 100,
+            PADDING_IN_PIXEL: number = 20;
+
+        const WIDTH: number = Number.parseFloat(
+            getComputedStyle(contextMenuRef.current).width.replace("px", ""))
+            * TO_PERCENT + PADDING_IN_PIXEL;
+
+        const HEIGHT: number = Number.parseFloat(
+            getComputedStyle(contextMenuRef.current).height.replace("px", ""))
+            * TO_PERCENT + PADDING_IN_PIXEL;
+
+        SetSize(WIDTH, HEIGHT);
+    }
+
+    function SetSize(width: number, height: number): void {
+        contextMenuRef.current.style.left = (props.x <= PAGE_WIDTH + window.scrollX - width) ? `${props.x}px` : "auto";
+        contextMenuRef.current.style.top = (props.y <= PAGE_HEIGHT + window.scrollY - height) ? `${props.y}px` : "auto";
+        contextMenuRef.current.style.right = (props.x > PAGE_WIDTH + window.scrollX - width) ? `${PAGE_WIDTH - props.x}px` : "auto";
+        contextMenuRef.current.style.bottom = (props.y > PAGE_HEIGHT + window.scrollY - height) ? `${PAGE_HEIGHT - props.y}px` : "auto";
     }
 
     return props.isOpen && createPortal(
@@ -97,10 +133,10 @@ export default function ContextMenu(props: ContextMenuProps): React.ReactElement
             onClick={_e => props.setIsOpen(false)}
 
             style={{
-                left: (props.x <= window.innerWidth * 3 / 4) ? `${props.x}px` : "auto",
-                top: (props.y <= window.innerHeight * 3 / 4) ? `${props.y}px` : "auto",
-                right: (props.x > window.innerWidth * 3 / 4) ? `${window.innerWidth - props.x}px` : "auto",
-                bottom: (props.y > window.innerHeight * 3 / 4) ? `${window.innerHeight - props.y}px` : "auto",
+                left: (props.x <= PAGE_WIDTH + window.scrollX) ? `${props.x}px` : "auto",
+                top: (props.y <= PAGE_HEIGHT + window.scrollY) ? `${props.y}px` : "auto",
+                right: (props.x > PAGE_WIDTH + window.scrollX) ? `${PAGE_WIDTH - props.x}px` : "auto",
+                bottom: (props.y > PAGE_HEIGHT + window.scrollY) ? `${PAGE_HEIGHT - props.y}px` : "auto",
             }}
         >
             <div id="context-menu-wrapper"> {
@@ -212,13 +248,8 @@ function ContextMenuButtonElement(props: ContextMenuButtonElementProps): React.R
         e.stopPropagation();
         props.RefreshWidth();
 
-        props.setPreviousOpenTabs(previousOpenTabs => {
-            if (previousOpenTabs.at(-1) == props.opensTab) {
-                return previousOpenTabs.slice(0, -1);
-            }
-
-            return [...previousOpenTabs, props.groupTabName];
-        });
+        props.setPreviousOpenTabs(previousOpenTabs => (previousOpenTabs.at(-1) == props.opensTab) ?
+            previousOpenTabs.slice(0, -1) : [...previousOpenTabs, props.groupTabName]);
 
         props.setOpenTab(props.opensTab);
     }
@@ -237,7 +268,10 @@ function ContextMenuButtonElement(props: ContextMenuButtonElementProps): React.R
             } as React.CSSProperties}
         >
             <p>{props.name}</p>
-            {(props.keyShortcut != null) && <p>{props.keyShortcut}</p>}
+            {
+                (props.keyShortcut != null) &&
+                <p>{props.keyShortcut}</p>
+            }
         </button>
     );
 }

@@ -1,7 +1,7 @@
 @use "../../index.scss";
 
 #home-page {
-    --padding: 5rem;
+    --padding: 5rem !important;
 
     padding: var(--padding);
 

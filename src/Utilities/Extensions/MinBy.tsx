@@ -1,6 +1,8 @@
 interface Array<T> {
 
-    /** Finds the element with the minimum value, according to a given predicate. */
+    /** Finds the element with the minimum value, according to a given predicate.
+     * @param predicate A function that's used to choose how to determine what values are dealt with.
+     */
     minBy<U>(predicate: (element: T) => U): T;
 }
 

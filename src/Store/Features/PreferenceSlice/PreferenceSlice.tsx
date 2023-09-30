@@ -1,7 +1,8 @@
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 
 import { Store } from "../../Store";
-import ChessTheme, { CHESS_THEMES } from "../../../Types/ChessTheme";
+import ChessTheme from "../../../Types/ChessTheme";
+import CHESS_THEMES from "../../../Constants/ChessThemes";
 import { GetFromLocalStorage, SetInLocalStorage } from "../../../Utilities/Functions/HandleLocalStorage";
 
 type PreferenceSliceType = {

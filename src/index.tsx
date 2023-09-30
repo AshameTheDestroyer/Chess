@@ -10,6 +10,7 @@ import "./Utilities/Extensions/ToClassName";
 import "./Utilities/Extensions/ChooseRandomly";
 import Header from "./Components/Header/Header";
 import HomePage from "./Pages/HomePage/HomePage";
+import PlayPage from "./Pages/PlayPage/PlayPage";
 import GameboardPage from "./Pages/GameboardPage/GameboardPage";
 import PreferencePage from "./Pages/PreferencePage/PreferencePage";
 import NotFound404Page from "./Pages/NotFound404Page/NotFound404Page";
@@ -23,21 +24,26 @@ const
 ReactDOM.createRoot(ROOT_DIV_ELEMENT ?? document.body).render(<Index />);
 
 function Index(): React.ReactElement {
+
     useEffect(() => {
-        document.body.oncontextmenu = _e => false;
+        // document.body.oncontextmenu = _e => false;
     }, []);
 
     return (
-        <HashRouter>
-            <Header />
-            <Provider store={Store}>
+        <Provider store={Store}>
+            <HashRouter>
+                <Header />
                 <Routes>
                     <Route path="/" element={<HomePage />} />
-                    <Route path="/Gameboard" element={<GameboardPage />} />
+
+                    <Route path="/Play" element={<PlayPage />} />
+                    <Route path="/Play/Gameboard" element={<GameboardPage />} />
+
                     <Route path="/Preference" element={<PreferencePage />} />
+
                     <Route path="/*" element={<NotFound404Page />} />
                 </Routes>
-            </Provider>
-        </HashRouter>
+            </HashRouter>
+        </Provider>
     );
 }

@@ -1,0 +1,84 @@
+@use "../../Pages/GameboardPage/GameboardPage.scss";
+
+#chess-movement-recorder {
+    $padding: GameboardPage.$gameboard-gap;
+
+    text-align: center;
+
+    max-height: 100%;
+
+    display: grid;
+    grid-template-columns: repeat(1, 1fr);
+    grid-template-rows: repeat(3, auto);
+    gap: $padding;
+
+    color: var(--light-colour);
+    background-color: var(--board-colour);
+    border: $padding solid var(--light-colour);
+
+    padding: $padding;
+
+    caption {
+        font-weight: bold;
+
+        padding: $padding;
+        margin: calc($padding * -1);
+        margin-bottom: auto;
+
+        color: var(--board-colour);
+        background-color: var(--light-colour);
+    }
+
+    thead,
+    tbody,
+    tfoot {
+        display: grid;
+        grid-template-columns: repeat(1, 1fr);
+        gap: $padding;
+
+        tr {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: $padding;
+        }
+    }
+
+    :is(thead, tfoot) tr {
+
+        :is(th, td):not(:first-child) {
+            grid-column: span 2;
+        }
+    }
+
+    tbody {
+        color: var(--board-colour);
+
+        overflow-x: hidden;
+        overflow-y: auto;
+        scroll-snap-type: y proximity;
+
+        &::-webkit-scrollbar-thumb {
+            background-color: var(--dark-colour);
+        }
+
+        tr {
+            scroll-snap-align: start;
+
+            &:nth-child(odd) :is(th, td) {
+                background-color: var(--light-colour);
+            }
+
+            &:nth-child(even) :is(th, td) {
+                background-color: var(--dark-colour);
+            }
+        }
+    }
+
+    tr {
+
+        th,
+        td {
+            padding: $padding;
+        }
+    }
+}
