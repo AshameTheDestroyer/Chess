@@ -84,5 +84,6 @@ Today we're not making any tedious Chess Game, no baby today we're making A WHOL
 3. Whenever a player runs outta available movements, a stalemate is thrown.
 4. If a player started playing dumb, now they'll have only a certain amount of movements, obeying the Fifty Movement Rule.
 5. Whenever players are fooling one another and repeatedly playing same movements, a certain amount of repetition is allowed now, obeying the Repetition Rule.
-6. A table of all recorded played movements is now available, that shows all player's movements, from and to where they've played it, its number, and how it turned out, (it's not as general as intended yet).
-7. A form to register all the playing states before actually start playing.
+6. A player running out of pieces, to only have one king, or one king and a knight, or one king and a bishop, leads to a draw, obeying the Insufficient Material Rule.
+7. A table of all recorded played movements is now available, that shows all player's movements, from and to where they've played it, its number, and how it turned out, (it's not as general as intended yet).
+8. A form to register all the playing states before actually start playing.
