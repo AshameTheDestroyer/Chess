@@ -92,3 +92,4 @@ Today we're not making any tedious Chess Game, no baby today we're making A WHOL
 1. Although it's been there for awhile now, it's never been implemented properly until yet.
 2. Firstly, I've tried to use an Event-Driven Pattern, something like Subscription Pattern, but it just won't work because Redux, apparently, can't store functions, due to their lack of serializability.
 3. So instead, I went with a pattern, that I'm not sure that it exists actually, but I'd simply called it as the Signal Pattern, but I'm pretty confident with the implementation so far, due to its simplicity.
+4. I've also added a Custom Hook for it, called useSignal, hehe.
