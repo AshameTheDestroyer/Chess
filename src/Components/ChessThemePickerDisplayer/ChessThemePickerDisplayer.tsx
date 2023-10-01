@@ -9,7 +9,7 @@ import { SelectPreferenceSlice, SetChessTheme } from "../../Store/Features/Prefe
 
 import "./ChessThemePickerDisplayer.scss";
 
-import PIECE_IMAGES from "../../Pages/GameboardPage/PieceImages";
+import PIECE_IMAGES from "../../Constants/PieceImages";
 
 type ChessThemePickerDisplayerProps = {
     selectedChessTheme: ChessTheme;

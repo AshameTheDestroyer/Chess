@@ -9,7 +9,7 @@ import { SelectPreferenceSlice } from "../../Store/Features/PreferenceSlice/Pref
 
 import "./PromotionPickerModal.scss";
 
-import PIECE_IMAGES from "../../Pages/GameboardPage/PieceImages";
+import PIECE_IMAGES from "../../Constants/PieceImages";
 
 type PromotionPickerModalProps = {
     readyToPromoteCell: Cell;

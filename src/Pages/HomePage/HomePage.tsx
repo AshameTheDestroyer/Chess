@@ -8,7 +8,7 @@ import CustomButtonDisplayer from "../../Utilities/Components/CustomButtonDispla
 
 import "./HomePage.scss";
 
-import PIECE_IMAGES from "../GameboardPage/PieceImages";
+import PIECE_IMAGES from "../../Constants/PieceImages";
 
 export default function HomePage(): React.ReactElement {
     const PreferenceSlice = useSelector(SelectPreferenceSlice);

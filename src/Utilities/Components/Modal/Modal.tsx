@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 
 import Coordinates from "../../Types/Coordinates";
 import EitherOrNeither from "../../Types/EitherOrNeither";
-import AudioManager from "../../../Managers/AudioManager";
+import AudioManager from "../../Managers/AudioManager/AudioManager";
 import ComponentProps, { ChildlessComponentProps, ComponentEventProps } from "../../Types/ComponentProps";
 
 import "./Modal.scss";

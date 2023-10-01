@@ -3,8 +3,11 @@ import { useSelector, useDispatch } from "react-redux";
 import React, { useEffect, useRef, useState } from "react";
 
 import Cell from "../../Types/Cell";
-import ColouredPiece from "../../Types/Piece";
+import DrawType from "../../Types/DrawType";
+import useSignal from "../../Utilities/Hooks/useSignal";
+import ColouredPiece, { PieceColour } from "../../Types/Piece";
 import { CHESS_PIECE_COUNT } from "../../Functions/GenerateEmptyGameboard";
+import AudioManager from "../../Utilities/Managers/AudioManager/AudioManager";
 import PromotionPickerModal from "../../Modals/PromotionPickerModal/PromotionPickerModal";
 import RepetitionCounterValues from "../../Store/Features/PlaySlice/RepetitionCounterValues";
 import { SelectPreferenceSlice } from "../../Store/Features/PreferenceSlice/PreferenceSlice";
@@ -30,9 +33,11 @@ import {
 
 import "./GameboardPage.scss";
 
-import PIECE_IMAGES from "./PieceImages";
+import GAME_AUDIOS from "../../Constants/GameAudios";
+import PIECE_IMAGES from "../../Constants/PieceImages";
 
 export default function GameboardPage(): React.ReactElement {
+    const GameboardSlice = useSelector(SelectGameboardSlice);
     const PreferenceSlice = useSelector(SelectPreferenceSlice);
     const Dispatch = useDispatch();
 
@@ -43,7 +48,12 @@ export default function GameboardPage(): React.ReactElement {
 
     const [readyToPromoteCell, setReadyToPromoteCell] = useState<Cell>(null);
 
+    const gameboardPageElementRef = useRef<HTMLDivElement>(null);
+
     useEffect(() => {
+        gameboardPageElementRef.current?.addEventListener("mousedown", () =>
+            AudioManager.Play(GAME_AUDIOS.game_start), { once: true });
+
         Dispatch(SetUpInitialGame({
             binaries: {
                 whitePlaysFirst: searchParams.get("white-plays-first") != undefined,
@@ -54,8 +64,45 @@ export default function GameboardPage(): React.ReactElement {
             },
         }));
 
-        return () => { Dispatch(ResetGameboard()); };
+        return () => {
+            Dispatch(ResetGameboard());
+        };
     }, []);
+
+    useSignal(() => {
+        switch (GameboardSlice.signals.pieceMove?.mostImportantCellState) {
+            case CellState.move: AudioManager.Play(GAME_AUDIOS.move); break;
+            case CellState.attack: AudioManager.Play(GAME_AUDIOS.attack); break;
+            case CellState.castle: AudioManager.Play(GAME_AUDIOS.castle); break;
+            case CellState.enPassant: AudioManager.Play(GAME_AUDIOS.en_passant); break;
+        }
+    }, [GameboardSlice.signals.pieceMove]);
+
+    useSignal(() => {
+        AudioManager.Play(GAME_AUDIOS.illegal);
+    }, [GameboardSlice.signals.illegalMovement]);
+
+    useSignal(() => {
+        AudioManager.Play(GAME_AUDIOS.promote);
+    }, [GameboardSlice.signals.pawnPromote]);
+
+    useSignal(() => {
+        AudioManager.Play(GAME_AUDIOS.check);
+    }, [GameboardSlice.signals.check]);
+
+    useSignal(() => {
+        const kingPieceColour: PieceColour = GameboardSlice.signals.checkmate.kingPieceColour;
+
+        AudioManager.Play(GAME_AUDIOS.checkmate);
+        alert(`${kingPieceColour[0].toUpperCase() + kingPieceColour.slice(1)} has been checkmated.`);
+    }, [GameboardSlice.signals.checkmate]);
+
+    useSignal(() => {
+        const drawType: DrawType = GameboardSlice.signals.draw.drawType;
+
+        AudioManager.Play(GAME_AUDIOS.stalemate);
+        alert(`Players have got a draw by ${drawType}.`);
+    }, [GameboardSlice.signals.draw]);
 
     return (
         <main
@@ -63,6 +110,7 @@ export default function GameboardPage(): React.ReactElement {
             className={[
                 (PreferenceSlice.options.alterPieceColours) && "alter-piece-colours",
             ].toClassName()}
+            ref={gameboardPageElementRef}
 
             style={{
                 "--dark-colour": PreferenceSlice.chessTheme.darkColour,
@@ -105,9 +153,9 @@ function GameboardElement(props: GameboardElementProps): React.ReactElement {
 
     const searchParams = new URLSearchParams(location.search);
 
-    let cellElements_: Array<HTMLButtonElement>;
+    let _cellElements: Array<HTMLButtonElement>;
     const getCellElements =
-        (): Array<HTMLButtonElement> => (cellElements_ ??= Array.from(document.querySelectorAll(".cell")));
+        (): Array<HTMLButtonElement> => (_cellElements ??= Array.from(document.querySelectorAll(".cell")));
 
     useEffect(() => {
         if (props.readyToPromoteCell == null) { return; }
