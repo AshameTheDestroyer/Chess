@@ -1,5 +1,5 @@
-import React from "react";
 import { useSelector } from "react-redux";
+import React, { createContext, useContext } from "react";
 
 import "../../Utilities/Extensions/Zip";
 import "../../Utilities/Extensions/ToNth";
@@ -10,24 +10,44 @@ import { SelectGameboardSlice } from "../../Store/Features/GameboardSlice/Gamebo
 
 import "./ChessMovementRecorder.scss";
 
+type ChessMovementRecorderContextType = {
+    whitePlaysFirst: boolean;
+};
+
+const ChessMovementRecorderContext =
+    createContext<ChessMovementRecorderContextType>(null);
+
 export default function ChessMovementRecorder(): React.ReactElement {
+    const searchParams = new URLSearchParams(location.search);
+
+    const context: ChessMovementRecorderContextType = {
+        whitePlaysFirst: searchParams.get("white-plays-first") != null,
+    };
+
     return (
-        <table id="chess-movement-recorder">
-            <caption>Played Movements</caption>
-            <ChessMovementRecorderHeader />
-            <ChessMovementRecorderBody />
-            <ChessMovementRecorderFooter />
-        </table>
+        <ChessMovementRecorderContext.Provider value={context}>
+            <table id="chess-movement-recorder">
+                <caption>Played Movements</caption>
+                <ChessMovementRecorderHeader />
+                <ChessMovementRecorderBody />
+                <ChessMovementRecorderFooter />
+            </table>
+        </ChessMovementRecorderContext.Provider>
     );
 }
 
 function ChessMovementRecorderHeader(): React.ReactElement {
+    const context = useContext(ChessMovementRecorderContext);
+
     return (
         <thead>
             <tr>
                 <th>nth</th>
                 {
-                    Object.keys(PieceColour).map((pieceColour, i) =>
+                    ((context.whitePlaysFirst) ?
+                        Object.keys(PieceColour) :
+                        Object.keys(PieceColour).reverse()
+                    ).map((pieceColour, i) =>
                         <th key={i}> {`${pieceColour[0].toUpperCase()}${pieceColour.slice(1)}`} </th>)
                 }
             </tr>
@@ -38,8 +58,10 @@ function ChessMovementRecorderHeader(): React.ReactElement {
 function ChessMovementRecorderBody(): React.ReactElement {
     const GameboardSlice = useSelector(SelectGameboardSlice);
 
+    const context = useContext(ChessMovementRecorderContext);
+
     const [whiteRecordedMovements, blackRecordedMovements] = [...GameboardSlice.playerRecordedMovements]
-        .sort((a, b) => a.colour.charCodeAt(0) + b.colour.charCodeAt(0))
+        .sort((a, b) => a.colour.charCodeAt(0) + b.colour.charCodeAt(0) * ((context.whitePlaysFirst) ? +1 : -1))
         .map(playerRecorderMovements => playerRecorderMovements.movements)
         .map(recordedMovements => recordedMovements.map(recordedMovement => [
             ChessCoordinatesToString(recordedMovement.from),
@@ -51,7 +73,7 @@ function ChessMovementRecorderBody(): React.ReactElement {
             (a, b) => [...a, ...b], [["", ""], ["", ""]]);
 
     return (
-        <tbody> {
+        <tbody>{
             movementRecordRows.map((movementRecordRow, i) =>
                 <tr key={i}>
                     <th> {(i + 1).toNth()} </th>
@@ -61,21 +83,25 @@ function ChessMovementRecorderBody(): React.ReactElement {
                     }
                 </tr>
             )
-        } </tbody>
+        }</tbody>
     );
 }
 
 function ChessMovementRecorderFooter(): React.ReactElement {
     const GameboardSlice = useSelector(SelectGameboardSlice);
 
+    const context = useContext(ChessMovementRecorderContext);
+
     return (
         <tfoot>
             <tr>
                 <th>Checks</th>
                 {
-                    GameboardSlice.playerCheckCounters
-                        .map(({ colour: _playerColour, counter: checkCounter }, i) =>
-                            <td key={i}>{checkCounter}</td>)
+                    ((context.whitePlaysFirst) ?
+                        GameboardSlice.playerCheckCounters :
+                        [...GameboardSlice.playerCheckCounters].reverse()
+                    ).map(({ colour: _playerColour, counter: checkCounter }, i) =>
+                        <td key={i}>{checkCounter}</td>)
                 }
             </tr>
         </tfoot>

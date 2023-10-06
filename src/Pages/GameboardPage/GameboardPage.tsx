@@ -56,7 +56,7 @@ export default function GameboardPage(): React.ReactElement {
 
         Dispatch(SetUpInitialGame({
             binaries: {
-                whitePlaysFirst: searchParams.get("white-plays-first") != undefined,
+                whitePlaysFirst: searchParams.get("white-plays-first") != null,
             },
             handlers: {
                 repetitionCounterValue: +searchParams.get("repetition-counter-value") as RepetitionCounterValues,

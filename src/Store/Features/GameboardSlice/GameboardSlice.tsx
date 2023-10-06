@@ -335,7 +335,10 @@ export const GameboardSlice = createSlice({
 
                 const
                     kingMovement_: PieceMovement = (movementIsArray) ? kingMovement[0] : kingMovement,
-                    { x: x0, y: y0 }: Coordinates = AddPieceMovementToPieceCoordinates(kingCell, kingMovement_),
+                    { x: x0, y: y0 }: Coordinates = AddPieceMovementToPieceCoordinates({
+                        cell: kingCell,
+                        pieceMovementCoordinates: kingMovement_,
+                    }),
                     cell: Cell = state.cells[x0]?.[y0];
 
                 if (cell == null) { return; }
@@ -479,9 +482,8 @@ export const GameboardSlice = createSlice({
                 threateningCellLines,
             };
 
-            state.playerCheckCounters
-                .find(playerCheckCounter => playerCheckCounter.colour != kingCell.colouredPiece.colour)
-                .counter++;
+            state.playerCheckCounters.find(playerCheckCounter =>
+                playerCheckCounter.colour != kingCell.colouredPiece.colour).counter++;
         },
 
         _DetectChecking: (state: GameboardSliceType, action: PayloadAction<_DetectCheckingActionType>): void => {
@@ -523,7 +525,8 @@ export const GameboardSlice = createSlice({
                     },
                 });
 
-            GameboardSlice.caseReducers._DetectDraw(state);
+            GameboardSlice.caseReducers._DetectFiftyMovementRule(state);
+            GameboardSlice.caseReducers._DetectInsufficientMaterials(state);
 
             let kingIsPinned: boolean = kingValidMovements.length == 0;
             if (!kingIsPinned) { return; }
@@ -560,11 +563,6 @@ export const GameboardSlice = createSlice({
             }
 
             state.signals.draw = { drawType: DrawType.Stalemate };
-        },
-
-        _DetectDraw: (state: GameboardSliceType): void => {
-            GameboardSlice.caseReducers._DetectFiftyMovementRule(state);
-            GameboardSlice.caseReducers._DetectInsufficientMaterials(state);
         },
 
         _DetectInsufficientMaterials: (state: GameboardSliceType): void => {

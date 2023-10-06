@@ -1,4 +1,6 @@
 import Cell from "../Types/Cell";
+import { Piece } from "../Types/Piece";
+import CheckThreats from "./CheckThreats";
 import CheckOccurrence from "../Types/CheckOccurrence";
 import Coordinates from "../Utilities/Types/Coordinates";
 import PieceMovement, { PieceMovements } from "../Types/PieceMovements";
@@ -9,7 +11,8 @@ type ApplyToPieceValidMovementsProps = {
     pieceMovements: PieceMovements;
     checkOccurrence: CheckOccurrence;
     preferredArguments?: {
-        cell: Cell;
+        cell?: Cell;
+        forcefullyApplyToAll?: boolean;
     };
 
     callback: (props: EvaluatePieceMovementOutputProps) => void;
@@ -42,7 +45,11 @@ function ApplyToPieceValidMovements(props: ApplyToPieceValidMovementsProps): voi
 
             props.callback(evaluationProps);
 
-            if (!evaluationProps.movementIsExtendible) { break; }
+            let movementIsExtendible: boolean = evaluationProps.movementIsExtendible,
+                forcefullyApplyToAll: boolean = props.preferredArguments?.forcefullyApplyToAll,
+                checkOccurrenceExists: boolean = props.checkOccurrence != null;
+
+            if (!movementIsExtendible && (!forcefullyApplyToAll || !checkOccurrenceExists)) { break; }
         }
     });
 }
@@ -59,12 +66,27 @@ type GetPieceValidMovementsProps = {
 } & Coordinates;
 
 export function GetPieceValidMovements(props: GetPieceValidMovementsProps): Array<PieceMovement> {
-    var pieceValidMovements: Array<PieceMovement> = [];
+    const
+        { x, y }: Coordinates = props,
+        pieceValidMovements: Array<PieceMovement> = [];
 
     ApplyToPieceValidMovements({
         ...props,
         callback: (evaluationProps: EvaluatePieceMovementOutputProps): void => {
             if (evaluationProps.cellState == null) { return; }
+
+            if (props.cells[x][y].colouredPiece.piece == Piece.king) {
+                const threateningCellLines: Array<Array<Cell>> = CheckThreats({
+                    ...props,
+                    kingCell: {
+                        ...props.cells[x][y],
+                        x: evaluationProps.x,
+                        y: evaluationProps.y,
+                    },
+                });
+
+                if (threateningCellLines.length > 0) { return; }
+            }
 
             pieceValidMovements.push(evaluationProps.pieceMovement);
         },

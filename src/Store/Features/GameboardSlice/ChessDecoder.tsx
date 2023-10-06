@@ -5,6 +5,7 @@ import Coordinates, { IndexToCoordinates, RegularIndexToBoardIndex } from "../..
 
 // INFO: FEN stands for Forsyth-Edwards Notation; a way to represent chess game via a string.
 export const INITIAL_GAME_FEN_CODE: string = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
+// export const INITIAL_GAME_FEN_CODE: string = "3k4/Q2r4/8/3b4/8/3Q4/8/6K";
 
 const chessPieceMap = new Map<string, `${PieceColour}_${Piece}`>([
     ["p", "black_pawn"],

@@ -18,6 +18,8 @@ export default function PlayPage(): React.ReactElement {
     return (
         <main id="play-page">
             <form action={`${location.origin}${location.pathname}#/Play/Gameboard`} >
+                <h1 className="big-header">Plan a Game!</h1>
+
                 <section>
                     <ToggleButton
                         id="white-plays-first"

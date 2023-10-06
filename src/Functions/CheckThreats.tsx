@@ -11,12 +11,13 @@ type CheckThreatsProps = {
     kingCell: Cell;
     cells: Array<Array<Cell>>;
     checkOccurrence?: CheckOccurrence;
+    isCheckingForPinViolationPieceMovements?: boolean;
 };
 
 export function CheckThreats(props: CheckThreatsProps): Array<Array<Cell>> {
     let threateningCellLines: Array<Array<Cell>> = [];
-    const setThreateningCellLines: (threateningCellLines_: Array<Array<Cell>>) => Array<Array<Cell>> =
-        (threateningCellLines_) => threateningCellLines = threateningCellLines_;
+    const setThreateningCellLines =
+        (threateningCellLines_: Array<Array<Cell>>) => threateningCellLines = threateningCellLines_;
 
     for (const [piece, pieceMovements] of AllPieceMovements) {
         if (piece == Piece.king) { continue; }
@@ -34,7 +35,10 @@ export function CheckThreats(props: CheckThreatsProps): Array<Array<Cell>> {
                     threateningCellLines,
                     setThreateningCellLines,
                 }),
-            preferredArguments: { cell: props.kingCell },
+            preferredArguments: {
+                cell: props.kingCell,
+                forcefullyApplyToAll: props.isCheckingForPinViolationPieceMovements,
+            },
         });
     }
 
@@ -52,29 +56,59 @@ type GenerateThreateningCellLinesProps = {
 
 function GenerateThreateningCellLines(props: GenerateThreateningCellLinesProps): void {
     const
-        { x: x0, y: y0 } = AddPieceMovementToPieceCoordinates(props.kingCell, props.pieceMovement),
+        { x: x0, y: y0 } = AddPieceMovementToPieceCoordinates({
+            cell: props.kingCell,
+            pieceMovementCoordinates: props.pieceMovement,
+        }),
         cell: Cell = props.cells[x0]?.[y0];
 
     let pieceExists: boolean = cell?.colouredPiece != null,
-        canPieceMovementAttackKing: boolean =
+        // movementIsExtendible: boolean = props.movementIsExtendible,
+        pieceMovementCanAttackKing: boolean =
             !props.pieceMovement.isMoveOnly &&
             !props.pieceMovement.isCastlable &&
             !props.pieceMovement.isEnPassant &&
             !props.pieceMovement.isFirstMoveOnly;
 
-    if (!pieceExists || !canPieceMovementAttackKing) { return; }
+    // FIX: needs to be re-maintained.
+    // if (cell != null && !pieceExists && !movementIsExtendible && props.currentPiece == "queen") {
+    //     const
+    //         threateningCellLine: Array<Cell> = [cell,
+    //             ...props.pieceMovementLine?.map(pieceMovement => {
+    //                 const { x, y }: Coordinates = AddPieceMovementToPieceCoordinates({
+    //                     cell,
+    //                     pieceMovementCoordinates: pieceMovement,
+    //                     preferredArguments: {
+    //                         colour: props.kingCell.colouredPiece.colour
+    //                     },
+    //                 });
+    //                 return props.cells[x]?.[y];
+    //             }).filter(cell => cell != null) ?? [],
+    //         ],
+    //         cutThreateningCellLine: Array<Cell> = threateningCellLine.slice(0,
+    //             threateningCellLine.findIndex(cell => cell.colouredPiece != null) + 1);
+
+    //     if (cutThreateningCellLine.length > 0) {
+    //         props.setThreateningCellLines([...props.threateningCellLines, cutThreateningCellLine]);
+    //     }
+    // }
+
+    if (!pieceExists || !pieceMovementCanAttackKing) { return; }
 
     let pieceIsFoe: boolean = cell.colouredPiece.colour != props.kingCell.colouredPiece.colour,
         pieceIsThreatening: boolean = pieceIsFoe && cell.colouredPiece.piece == props.currentPiece,
-        isThreatRegisteredInLine: boolean = props.threateningCellLines.find(threateningCellLine => threateningCellLine[0] == cell) != null,
+        threatIsRegisteredInLine: boolean = props.threateningCellLines.find(threateningCellLine => threateningCellLine[0] == cell) != null,
         threateningPieceHasNoLine: boolean = [Piece.knight, Piece.pawn].includes(cell.colouredPiece.piece);
 
-    if (!pieceIsThreatening || isThreatRegisteredInLine) { return; }
+    if (!pieceIsThreatening || threatIsRegisteredInLine) { return; }
     if (threateningPieceHasNoLine) { props.setThreateningCellLines([...props.threateningCellLines, [cell]]); return; }
 
     const threateningCellLine: Array<Cell> = [cell,
         ...props.pieceMovementLine?.map(pieceMovement => {
-            const { x, y }: Coordinates = AddPieceMovementToPieceCoordinates(cell, pieceMovement);
+            const { x, y }: Coordinates = AddPieceMovementToPieceCoordinates({
+                cell,
+                pieceMovementCoordinates: pieceMovement,
+            });
             return props.cells[x]?.[y];
         }).filter(cell => cell != null) ?? [],
     ];

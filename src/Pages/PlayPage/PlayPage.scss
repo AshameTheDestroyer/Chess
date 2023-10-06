@@ -15,8 +15,20 @@
         flex-direction: column;
         gap: 4rem;
 
+        padding: 3rem;
+
+        background-color: var(--background-darker-colour);
+        border: 0.2rem solid var(--background-colour);
+        border-radius: 2rem;
+
         .custom-button-displayer {
             width: 100%;
+            gap: 2rem;
+
+            .custom-button {
+                width: 25%;
+                min-width: fit-content;
+            }
         }
     }
 }
@@ -26,12 +38,21 @@
     #play-page {
 
         form {
+            width: min-content;
+
             display: grid;
             grid-template-columns: repeat(2, 1fr);
+            place-content: center start;
+            place-items: center start;
 
-            &>section:first-child,
+            &>h1,
+            &>section:first-of-type,
             .custom-button-displayer {
                 grid-column: 1 / -1;
+            }
+
+            .radio-group {
+                min-width: 30rem;
             }
         }
     }

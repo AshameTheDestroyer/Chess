@@ -51,6 +51,15 @@ body {
 
         min-height: calc(100dvh - var(--header-height) - var(--padding, 0rem) * 2);
         min-height: calc(100vh - var(--header-height) - var(--padding, 0rem) * 2);
+
+        @media (orientation: landscape) {
+            background-image: linear-gradient(145deg, var(--background-darker-colour), var(--background-colour));
+        }
+
+        @media (orientation: portrait) {
+            background-image: linear-gradient(0deg, var(--background-darker-colour), var(--background-colour));
+        }
+
     }
 }
 
@@ -115,8 +124,6 @@ img {
 }
 
 h1.big-header {
-    white-space: break-spaces;
-    line-break: anywhere;
     font-size: 5rem;
 
     color: var(--main-colour);

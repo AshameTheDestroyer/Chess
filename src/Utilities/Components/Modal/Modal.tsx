@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { createPortal } from "react-dom";
 
 import Coordinates from "../../Types/Coordinates";
+import GAME_AUDIOS from "../../../Constants/GameAudios";
 import EitherOrNeither from "../../Types/EitherOrNeither";
 import AudioManager from "../../Managers/AudioManager/AudioManager";
 import ComponentProps, { ChildlessComponentProps, ComponentEventProps } from "../../Types/ComponentProps";
@@ -17,7 +18,7 @@ export type ModalComponentProps = {
 };
 
 export type ModalProps = {
-    doesntRiseSound?: boolean;
+    doesntPlayAudio?: boolean;
     preventOutsideClosing?: boolean;
     backgroundProps?: ChildlessComponentProps;
 } & EitherOrNeither<{ isForm: false }, {
@@ -56,9 +57,9 @@ export default function Modal(props: ModalProps): React.ReactElement {
     }
 
     useEffect(() => {
-        if (!props.isOpen || props.doesntRiseSound) { return; }
+        if (!props.isOpen || props.doesntPlayAudio) { return; }
 
-        AudioManager.Play("/Chess-Engine/src/assets/Audios/notification.mp3");
+        AudioManager.Play(GAME_AUDIOS.notification);
     }, [props.isOpen]);
 
     function OnOutsideClick(e: React.MouseEvent<HTMLElement, MouseEvent>): void {
