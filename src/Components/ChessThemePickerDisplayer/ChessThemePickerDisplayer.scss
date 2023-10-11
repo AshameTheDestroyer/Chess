@@ -16,7 +16,7 @@
 
             background-color: var(--background-darker-colour);
 
-            border: 0.3rem solid var(--fore-colour);
+            border: 0.3rem solid var(--background-colour);
             border-radius: 1rem;
 
             transition:
@@ -31,7 +31,7 @@
                 border-color: var(--dark-colour);
 
                 .custom-button {
-                    --background-darker-colour: var(--dark-colour);
+                    --background-darker-colour-: var(--dark-colour);
                     --main-colour: var(--light-colour);
                 }
             }
@@ -73,6 +73,23 @@
                     &:is(:nth-child(1), :nth-child(4)) {
                         background-color: var(--light-colour);
                     }
+                }
+            }
+        }
+    }
+}
+
+[data-theme=light] #chess-theme-picker-section {
+
+    #chess-theme-picker-displayer {
+
+        .chess-theme-picker {
+
+            &-equipped {
+                background-color: var(--fore-darker-colour);
+
+                .custom-button-pressed {
+                    color: var(--dark-colour);
                 }
             }
         }

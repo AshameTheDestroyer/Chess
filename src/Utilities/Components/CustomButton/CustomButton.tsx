@@ -2,7 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 
 import EitherOrNeither from "../../Types/EitherOrNeither";
-import ComponentProps, { ComponentEventProps } from "../../Types/ComponentProps";
+import ComponentProps, { ChildlessComponentProps, ComponentEventProps } from "../../Types/ComponentProps";
 
 import "./CustomButton.scss";
 
@@ -26,9 +26,12 @@ type CustomButtonProps = {
     isPressed?: boolean;
 }, {
     isDisabled?: boolean;
-}> & ComponentProps;
+}> & EitherOrNeither<{
+    text?: string;
+}, Pick<ComponentProps, "children">> & ChildlessComponentProps;
 
 export default function CustomButton(props: CustomButtonProps): React.ReactElement {
+
     function OnClick(e: React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
         if (props.isPressed) { return; }
 
@@ -46,10 +49,10 @@ export default function CustomButton(props: CustomButtonProps): React.ReactEleme
             className={[
                 "custom-button",
 
-                props.isArrowed && "custom-button-arrowed",
-                props.isPressed && "custom-button-pressed",
-                props.isEmphasized && "custom-button-emphasized",
-                props.iconURL != null && "custom-button-iconified",
+                (props.isArrowed) && "custom-button-arrowed",
+                (props.isPressed) && "custom-button-pressed",
+                (props.isEmphasized) && "custom-button-emphasized",
+                (props.iconURL != null) && "custom-button-iconified",
 
                 props.className,
             ].toClassName()}
@@ -63,12 +66,12 @@ export default function CustomButton(props: CustomButtonProps): React.ReactEleme
             onClick={OnClick}
 
             style={{
-                "--icon-url": props.iconURL != null ? `url("${props.iconURL}")` : undefined,
+                "--icon-url": (props.iconURL != null) ? `url("${props.iconURL}")` : undefined,
             } as React.CSSProperties}
         >
             {
-                props.link == null ? props.children :
-                    <Link to={props.link}>{props.children}</Link>
+                (props.link == null) ? (props.text ?? props.children) :
+                    <Link to={props.link} tabIndex={-1}>{props.text ?? props.children}</Link>
             }
         </button>
     );

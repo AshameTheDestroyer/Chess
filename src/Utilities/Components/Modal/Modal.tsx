@@ -2,12 +2,13 @@ import React, { useEffect } from "react";
 import { createPortal } from "react-dom";
 
 import Coordinates from "../../Types/Coordinates";
-import GAME_AUDIOS from "../../../Constants/GameAudios";
 import EitherOrNeither from "../../Types/EitherOrNeither";
 import AudioManager from "../../Managers/AudioManager/AudioManager";
 import ComponentProps, { ChildlessComponentProps, ComponentEventProps } from "../../Types/ComponentProps";
 
 import "./Modal.scss";
+
+import notification_audio from "../../../assets/Audios/notification.mp3";
 
 type FormMethods = "GET" | "POST" | "UPDATE" | "DELETE";
 
@@ -21,6 +22,7 @@ export type ModalProps = {
     doesntPlayAudio?: boolean;
     preventOutsideClosing?: boolean;
     backgroundProps?: ChildlessComponentProps;
+    backgroundIsAbsolutelyPositioned?: boolean;
 } & EitherOrNeither<{ isForm: false }, {
     isForm: true;
     action?: string;
@@ -39,7 +41,7 @@ export default function Modal(props: ModalProps): React.ReactElement {
         id: props.id,
         className: [
             "modal",
-            props.isPopup && "pop-up-modal",
+            (props.isPopup) && "pop-up-modal",
             props.className,
         ].toClassName(),
         children: props.children,
@@ -59,7 +61,7 @@ export default function Modal(props: ModalProps): React.ReactElement {
     useEffect(() => {
         if (!props.isOpen || props.doesntPlayAudio) { return; }
 
-        AudioManager.Play(GAME_AUDIOS.notification);
+        AudioManager.Play(notification_audio);
     }, [props.isOpen]);
 
     function OnOutsideClick(e: React.MouseEvent<HTMLElement, MouseEvent>): void {
@@ -78,21 +80,25 @@ export default function Modal(props: ModalProps): React.ReactElement {
                     "modal-background",
                     props.backgroundProps?.className,
 
-                    props.isPopup && "pop-up-modal-background",
+                    (props.isPopup) && "pop-up-modal-background",
                 ].toClassName()}
+
+                style={{
+                    position: (props.backgroundIsAbsolutelyPositioned) ? "absolute" : null,
+                }}
 
                 onClick={OnOutsideClick}
                 onKeyDown={OnOutsideKeydown}
             />
             {
-                props.isForm ?
+                (props.isForm) ?
                     <form {...INNER_ELEMENT_PROPS} method={props.method} action={props.action} {...props.events} /> :
                     <article {...INNER_ELEMENT_PROPS} />
             }
         </>
     );
 
-    return !props.isOpen ? null :
-        props.isPopup && props.coordinates == null ? OUTPUT :
+    return (!props.isOpen) ? null :
+        (props.isPopup && props.coordinates == null) ? OUTPUT :
             createPortal(OUTPUT, MODAL_CONTAINER ?? document.body);
 }

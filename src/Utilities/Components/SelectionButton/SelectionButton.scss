@@ -4,6 +4,8 @@
 .selection-button {
     --width: 7rem;
     --toggle-button-ratio: calc(13 / 6);
+    --background-colour-: hsl(0, 0%, 6%);
+    --background-darker-colour-: hsl(0, 0%, 0%);
 
     display: flex;
     place-content: center start;
@@ -24,12 +26,12 @@
         width: calc(var(--width) / var(--toggle-button-ratio));
         aspect-ratio: 1;
 
-        background-color: var(--background-colour);
+        background-color: var(--background-colour-);
 
         border-radius: 100rem;
-        border: 0.3rem solid var(--background-darker-colour);
+        border: 0.3rem solid var(--background-darker-colour-);
 
-        box-shadow: 0 var(--thickness) 0 var(--background-darker-colour);
+        box-shadow: 0 var(--thickness) 0 var(--background-darker-colour-);
 
         margin-bottom: var(--thickness);
 
@@ -49,7 +51,7 @@
         @include CustomButton.hover-shininess();
 
         &:focus-within {
-            --background-darker-colour: var(--fore-colour);
+            --background-darker-colour-: var(--fore-colour);
         }
 
         &>span {
@@ -60,11 +62,11 @@
             height: 100%;
             aspect-ratio: 1;
 
-            background-color: var(--background-darker-colour);
+            background-color: var(--background-darker-colour-);
 
             border-radius: 100%;
             border: inherit;
-            border-color: var(--background-colour);
+            border-color: var(--background-colour-);
             box-sizing: border-box;
 
             transition:
@@ -81,11 +83,28 @@
     }
 
     &-checked {
-        --background-colour: var(--main-colour);
-        --background-darker-colour: hsl(var(--main-colour-raw), 20%);
+        --background-colour-: var(--main-colour);
+        --background-darker-colour-: hsl(var(--main-colour-raw), 20%);
 
         &>button>span {
             background-color: var(--fore-colour);
+        }
+    }
+}
+
+[data-theme=light] .selection-button {
+
+    &>button {
+
+        &:focus-within:not(:active) {
+            --background-darker-colour-: var(--background-colour);
+        }
+    }
+
+    &-checked>button {
+
+        &>span {
+            background-color: var(--background-darker-colour);
         }
     }
 }

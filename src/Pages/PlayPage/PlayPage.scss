@@ -1,8 +1,6 @@
 @use "../../index.scss";
 
 #play-page {
-    --padding: 4rem;
-
     display: flex;
     flex-direction: column;
     place-content: center;
@@ -13,7 +11,7 @@
     form {
         display: flex;
         flex-direction: column;
-        gap: 4rem;
+        gap: 3rem;
 
         padding: 3rem;
 
@@ -22,13 +20,7 @@
         border-radius: 2rem;
 
         .custom-button-displayer {
-            width: 100%;
-            gap: 2rem;
-
-            .custom-button {
-                width: 25%;
-                min-width: fit-content;
-            }
+            place-self: end;
         }
     }
 }

@@ -1,11 +1,14 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 
+import "../../Utilities/Extensions/ToTitleCase";
+import { PieceColour } from "../../Types/Piece";
 import RadioGroup from "../../Utilities/Components/RadioGroup/RadioGroup";
-import ToggleButton from "../../Utilities/Components/ToggleButton/ToggleButton";
 import CustomButton from "../../Utilities/Components/CustomButton/CustomButton";
+import { SelectGameboardSlice } from "../../Store/Features/GameboardSlice/GameboardSlice";
 import RepetitionCounterValues from "../../Store/Features/PlaySlice/RepetitionCounterValues";
-import { ResetPlayState, SelectPlaySlice, SetBinaries, SetHandlers } from "../../Store/Features/PlaySlice/PlaySlice";
+import { ResetPlayState, SelectPlaySlice, SetHandlers } from "../../Store/Features/PlaySlice/PlaySlice";
 import FiftyRuleMovementCounterValues from "../../Store/Features/PlaySlice/FiftyRuleMovementCounterValues";
 import CustomButtonDisplayer from "../../Utilities/Components/CustomButtonDisplayer/CustomButtonDisplayer";
 
@@ -13,26 +16,43 @@ import "./PlayPage.scss";
 
 export default function PlayPage(): React.ReactElement {
     const PlaySlice = useSelector(SelectPlaySlice);
+    const GameboardSlice = useSelector(SelectGameboardSlice);
     const Dispatch = useDispatch();
 
-    return (
+    const Navigate = useNavigate();
+
+    const GAMEBOARD_URL: string = `${location.origin}${location.pathname}#/Play/Gameboard`;
+
+    useEffect(() => {
+        if (!GameboardSlice.gameHasStarted) { return; }
+
+        Navigate("Gameboard");
+    }, [])
+
+
+    return (GameboardSlice.gameHasStarted) ? null : (
         <main id="play-page">
-            <form action={`${location.origin}${location.pathname}#/Play/Gameboard`} >
+            <form action={GAMEBOARD_URL}>
                 <h1 className="big-header">Plan a Game!</h1>
 
-                <section>
-                    <ToggleButton
-                        id="white-plays-first"
+                <RadioGroup
+                    id="first-player"
 
-                        text="White Plays First"
-                        isChecked={PlaySlice.binaries.whitePlaysFirst}
+                    heading={{ text: "First Turn", type: "h2" }}
+                    checkedValue={PlaySlice.handlers.firstPlayer}
+                    entries={
+                        Object.keys(PieceColour)
+                            .map(pieceColour => ({
+                                value: pieceColour,
+                                text: pieceColour.toTitleCase(),
+                            }))
+                    }
 
-                        setIsChecked={_previousValue => Dispatch(SetBinaries({
-                            ...PlaySlice.binaries,
-                            whitePlaysFirst: !PlaySlice.binaries.whitePlaysFirst,
-                        }))}
-                    />
-                </section>
+                    setCheckedValue={value => Dispatch(SetHandlers({
+                        ...PlaySlice.handlers,
+                        firstPlayer: value as PieceColour,
+                    }))}
+                />
 
                 <RadioGroup
                     id="repetition-counter-value"
@@ -77,20 +97,17 @@ export default function PlayPage(): React.ReactElement {
                 <CustomButtonDisplayer>
                     <CustomButton
                         type="reset"
-
-                        children="Defaults"
+                        text="Defaults"
 
                         events={{ onClick: _e => Dispatch(ResetPlayState()) }}
                     />
 
                     <CustomButton
-                        type="submit"
-
                         isArrowed
+                        text="Play"
+                        type="submit"
                         isEmphasized
                         iconPlace="right"
-
-                        children="Play"
                     />
                 </CustomButtonDisplayer>
             </form>

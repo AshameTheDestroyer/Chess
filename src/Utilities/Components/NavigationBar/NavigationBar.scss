@@ -11,7 +11,6 @@
     flex-direction: column;
 
     background-color: var(--background-darker-colour);
-    border-left: 0.2rem solid var(--background-colour);
 
     overflow: hidden;
 
@@ -50,6 +49,7 @@
 @media (min-width: index.$second-screen-width) {
 
     .navigation-bar {
+        border-left: 0.2rem solid var(--background-colour);
 
         &.open {
             left: 50vw;
@@ -79,7 +79,7 @@
             padding: 1rem;
 
             border-bottom: none !important;
-            border-radius: 1.5rem;
+            border-radius: 100rem;
 
             &:is(:hover, :focus-within, .selected) {
                 background-color: var(--background-colour);

@@ -3,103 +3,34 @@
 #home-page {
     --padding: 5rem !important;
 
+    display: grid;
+
     padding: var(--padding);
+
+    #chess-wallpaper {
+        position: fixed;
+        inset: 0;
+
+        z-index: -1;
+
+        img {
+            height: 100vh;
+            width: 100vw;
+            object-fit: cover;
+        }
+    }
 
     &>section {
         min-height: inherit;
 
-        display: grid;
-        grid-template-columns: 1fr;
-        grid-template-rows: repeat(2, 1fr);
+        display: flex;
+        flex-direction: column;
+        place-content: start center;
+        place-items: start center;
         gap: 2rem;
 
-        overflow: hidden;
-
-        &>div {
-            display: flex;
-            flex-direction: column;
-            place-content: start center;
-            place-items: start center;
-            gap: 2rem;
-        }
-
-        #piece-image-displayer {
-            position: relative;
-            min-height: calc(100dvh - var(--header-height) - var(--padding) * 2);
-            min-height: calc(100vh - var(--header-height) - var(--padding) * 2);
-
-            grid-row: 1;
-
-            &.alter-piece-colours>figure>svg {
-                @include index.drop-shadow($colour: var(--board-colour), $blurriness: 0.1rem, $thickness: 0.3rem);
-            }
-
-            &>figure>svg {
-                --size: 50vw;
-
-                position: absolute;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%) scale(0);
-
-                width: calc(var(--size) - var(--padding) * 2);
-                height: calc(var(--size) - var(--padding) * 2);
-
-                opacity: 0;
-
-                @include index.drop-shadow($colour: var(black), $blurriness: 0.1rem, $thickness: 0.3rem);
-
-                @for $i from 1 through 4 {
-
-                    &:nth-child(#{$i}) {
-                        animation-name: piece-image-entrance-#{$i};
-                        animation-duration: 500ms;
-                        animation-delay: calc(100ms * $i);
-                        animation-iteration-count: 1;
-                        animation-fill-mode: forwards;
-                        animation-direction: normal;
-                        animation-timing-function: var(--best-bezier-curve);
-
-                        @keyframes piece-image-entrance-#{$i} {
-
-                            from {
-                                transform: translate(-50%, -50%) scale(0.5);
-
-                                opacity: 0;
-                            }
-
-                            to {
-                                transform: translate(calc(-85% + 50% * ($i - 2)), -75%) rotate(calc(10deg * ($i - 2))) scale(calc(1 + 1 * $i / 10));
-
-                                opacity: 1;
-                            }
-                        }
-                    }
-                }
-            }
-
-            &>.custom-button-displayer {
-                position: absolute;
-                bottom: var(--padding);
-
-                width: 100%;
-            }
-        }
-    }
-}
-
-@media (min-width: index.$second-screen-width) {
-
-    #home-page {
-
-        &>section {
-
-            #piece-image-displayer {
-
-                &>figure>svg {
-                    --size: 40vw;
-                }
-            }
+        .custom-button-displayer {
+            place-self: end;
         }
     }
 }
@@ -107,20 +38,7 @@
 @media (min-width: index.$first-screen-width) {
 
     #home-page {
-
-        &>section {
-            grid-template-columns: repeat(2, 1fr);
-            grid-template-rows: 1fr;
-
-            #piece-image-displayer {
-                min-height: auto;
-
-                grid-row: auto;
-
-                &>figure>svg {
-                    --size: min(25rem, 28vw);
-                }
-            }
-        }
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: 1fr;
     }
 }

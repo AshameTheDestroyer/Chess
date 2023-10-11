@@ -1,13 +1,14 @@
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 
+import { PieceColour } from "../../../Types/Piece";
 import RepetitionCounterValues from "./RepetitionCounterValues";
 import FiftyRuleMovementCounterValues from "./FiftyRuleMovementCounterValues";
 
 export type PlayBinaries = {
-    whitePlaysFirst: boolean;
 };
 
 export type PlayHandlers = {
+    firstPlayer: PieceColour;
     repetitionCounterValue: RepetitionCounterValues;
     fiftyRuleMovementCounterValue: FiftyRuleMovementCounterValues;
 };
@@ -19,10 +20,10 @@ export type PlaySliceType = {
 
 const INITIAL_STATE: PlaySliceType = {
     binaries: {
-        whitePlaysFirst: true,
     },
     handlers: {
         repetitionCounterValue: 3,
+        firstPlayer: PieceColour.white,
         fiftyRuleMovementCounterValue: 50,
     },
 };

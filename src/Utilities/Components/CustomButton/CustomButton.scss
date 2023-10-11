@@ -46,7 +46,7 @@
     }
 
     &:focus-within:not(:active) {
-        --background-darker-colour: var(--fore-colour);
+        --background-darker-colour-: var(--fore-colour);
     }
 }
 
@@ -62,7 +62,7 @@
 @mixin pressing-output() {
     transform: translateY(var(--thickness));
 
-    box-shadow: 0 0 0 var(--background-darker-colour);
+    box-shadow: 0 0 0 var(--background-darker-colour-);
 }
 
 @mixin pressing($selector: "", $is-sub-selector: true) {
@@ -86,8 +86,8 @@
     $padding: 1rem;
     $icon-padding-ratio: 0.7;
     $size: calc(1ch + $padding * 2);
-    --background-colour: hsl(0, 0%, 6%);
-    --background-darker-colour: hsl(0, 0%, 0%);
+    --background-colour-: hsl(0, 0%, 6%);
+    --background-darker-colour-: hsl(0, 0%, 0%);
     --thickness: 0.5em;
     --icon-url: url("");
 
@@ -99,12 +99,12 @@
     padding: $padding;
     margin-bottom: var(--thickness);
 
-    background-color: var(--background-colour);
+    background-color: var(--background-colour-);
 
     border-radius: 1.25rem;
-    border: 0.25rem solid var(--background-darker-colour);
+    border: 0.25rem solid var(--background-darker-colour-);
 
-    box-shadow: 0 var(--thickness) 0 var(--background-darker-colour);
+    box-shadow: 0 var(--thickness) 0 var(--background-darker-colour-);
 
     transition: transform 200ms, border 200ms, box-shadow 200ms;
 
@@ -115,8 +115,8 @@
     @include hover-shininess($padding, $icon-padding-ratio);
 
     &-emphasized {
-        --background-colour: var(--main-colour);
-        --background-darker-colour: hsl(var(--main-colour-raw), 20%);
+        --background-colour-: var(--main-colour);
+        --background-darker-colour-: hsl(var(--main-colour-raw), 20%);
     }
 
     &-arrowed {
@@ -156,5 +156,14 @@
         text-decoration: none;
 
         pointer-events: none;
+    }
+
+}
+
+[data-theme=light] .custom-button {
+    color: var(--background-darker-colour);
+
+    &:focus-within:not(:active) {
+        --background-darker-colour-: var(--background-colour);
     }
 }

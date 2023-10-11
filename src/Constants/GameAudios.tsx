@@ -8,7 +8,6 @@ import stalemate from "../assets/Audios/stalemate.mp3";
 import checkmate from "../assets/Audios/checkmate.mp3";
 import en_passant from "../assets/Audios/enPassant.mp3";
 import game_start from "../assets/Audios/game-start.mp3";
-import notification from "../assets/Audios/notification.mp3"
 
 const GAME_AUDIOS = {
     move,
@@ -21,7 +20,6 @@ const GAME_AUDIOS = {
     checkmate,
     en_passant,
     game_start,
-    notification,
 };
 
 export default GAME_AUDIOS;

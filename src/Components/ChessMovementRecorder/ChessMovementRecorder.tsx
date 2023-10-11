@@ -21,7 +21,7 @@ export default function ChessMovementRecorder(): React.ReactElement {
     const searchParams = new URLSearchParams(location.search);
 
     const context: ChessMovementRecorderContextType = {
-        whitePlaysFirst: searchParams.get("white-plays-first") != null,
+        whitePlaysFirst: searchParams.get("first-player") == PieceColour.white,
     };
 
     return (

@@ -95,13 +95,12 @@ function EvaluatePieceMovement(props: EvaluatePieceMovementsProps): EvaluatePiec
         pieceMovementCoordinates: { x: x0, y: y0 },
     })) { return pieceMovementEvaluationOnFailed; }
 
-    const cellState: CellState = ((): CellState => {
-        if (props.pieceMovement.isEnPassant) return CellState.enPassant;
-        if (props.pieceMovement.isCastlable) return CellState.castle;
-        if (canCanPromote && props.pieceMovement.isPromotable) return CellState.promote;
-        if (cellHasFoePiece) return CellState.attack;
-        return CellState.move;
-    })();
+    const cellState: CellState =
+        (props.pieceMovement.isEnPassant) ? CellState.enPassant :
+            (props.pieceMovement.isCastlable) ? CellState.castle :
+                (canCanPromote && props.pieceMovement.isPromotable) ? CellState.promote :
+                    (cellHasFoePiece) ? CellState.attack :
+                        CellState.move;
 
     return {
         ...props,

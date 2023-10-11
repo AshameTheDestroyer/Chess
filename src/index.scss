@@ -53,13 +53,27 @@ body {
         min-height: calc(100vh - var(--header-height) - var(--padding, 0rem) * 2);
 
         @media (orientation: landscape) {
-            background-image: linear-gradient(145deg, var(--background-darker-colour), var(--background-colour));
+            background-image: linear-gradient(145deg, var(--background-darker-colour), transparent);
         }
 
         @media (orientation: portrait) {
-            background-image: linear-gradient(0deg, var(--background-darker-colour), var(--background-colour));
+            background-image: linear-gradient(0deg, var(--background-darker-colour), transparent);
+        }
+    }
+}
+
+[data-theme=light] body {
+    background-color: var(--background-darker-colour);
+
+    &>#root>main {
+
+        @media (orientation: landscape) {
+            background-image: linear-gradient(145deg, var(--background-colour), transparent);
         }
 
+        @media (orientation: portrait) {
+            background-image: linear-gradient(0deg, var(--background-colour), transparent);
+        }
     }
 }
 
@@ -97,13 +111,11 @@ a {
     color: inherit;
 }
 
-q {
-    color: var(--main-colour);
-}
+mark {
+    font-weight: bold;
 
-q::before,
-q::after {
-    content: "";
+    color: var(--main-colour);
+    background-color: transparent;
 }
 
 ul {
@@ -124,6 +136,7 @@ img {
 }
 
 h1.big-header {
+    word-break: break-all;
     font-size: 5rem;
 
     color: var(--main-colour);

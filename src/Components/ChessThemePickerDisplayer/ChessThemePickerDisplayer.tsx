@@ -23,7 +23,7 @@ export default function ChessThemePickerDisplayer(props: ChessThemePickerDisplay
             id="chess-theme-picker-section"
 
             className={[
-                (PreferenceSlice.options.alterPieceColours) && "alter-piece-colours",
+                (PreferenceSlice.binaries.alterPieceColours) && "alter-piece-colours",
             ].toClassName()}
         >
             <h1>Chess Theme</h1>
@@ -97,11 +97,10 @@ function ChessThemePicker(props: ChessThemePickerProps): React.ReactElement {
             <CustomButton
                 isPressed={props.isEquipped}
                 isEmphasized={props.isEquipped}
+                text={(props.isEquipped) ? "Equipped" : "Equip"}
 
                 events={{ onClick: _e => Dispatch(SetChessTheme(props)) }}
-            >
-                {(props.isEquipped) ? "Equipped" : "Equip"}
-            </CustomButton>
+            />
         </div>
     );
 }

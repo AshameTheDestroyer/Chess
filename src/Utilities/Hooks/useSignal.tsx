@@ -6,7 +6,7 @@ function useSignal(effect: React.EffectCallback, signal: [unknown]): void {
         if (signal[0] == null) { return; }
 
         return effect();
-    }, [signal[0]]);
+    }, signal);
 }
 
 export default useSignal;

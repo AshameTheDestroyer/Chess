@@ -40,11 +40,12 @@ export default function PromotionPickerModal(props: PromotionPickerModalProps): 
             id="promotion-picker-modal"
             backgroundProps={{ id: "promotion-picker-modal-background" }}
             className={[
-                (PreferenceSlice.options.alterPieceColours) && "alter-piece-colours",
+                (PreferenceSlice.binaries.alterPieceColours) && "alter-piece-colours",
             ].toClassName()}
 
             isPopup
             preventOutsideClosing
+            backgroundIsAbsolutelyPositioned
 
             {...props}
         >

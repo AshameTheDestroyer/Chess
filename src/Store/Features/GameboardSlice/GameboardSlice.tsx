@@ -59,6 +59,7 @@ type GameboardSignals = {
 };
 
 type GameboardSliceType = {
+    gameHasStarted: boolean;
     pieceCells: Array<Cell>;
     cells: Array<Array<Cell>>;
     checkOccurrence?: CheckOccurrence;
@@ -68,11 +69,11 @@ type GameboardSliceType = {
     playState?: {
         playerTurn: PieceColour;
     } & PlayHandlers;
-
     signals: GameboardSignals;
 };
 
 const INITIAL_STATE: GameboardSliceType = {
+    gameHasStarted: false,
     pieceCells: new Array<Cell>(),
     cells: GenerateEmptyGameboard(),
     playerCheckCounters: [
@@ -87,7 +88,6 @@ const INITIAL_STATE: GameboardSliceType = {
         { colour: PieceColour.white, movements: [] },
         { colour: PieceColour.black, movements: [] },
     ],
-
     signals: {},
 };
 
@@ -99,7 +99,7 @@ export const GameboardSlice = createSlice({
         SetUpGame: (state: GameboardSliceType, action: PayloadAction<SetUpGameActionType>): void => {
             state.playState = {
                 ...action.payload.handlers,
-                playerTurn: (action.payload.binaries.whitePlaysFirst) ? PieceColour.white : PieceColour.black,
+                playerTurn: action.payload.handlers.firstPlayer,
             };
 
             DecodeFENCode(action.payload.FENCode).forEach(cell => {
@@ -114,6 +114,8 @@ export const GameboardSlice = createSlice({
                     type: "gameboard/SetPiece",
                 });
             });
+
+            state.gameHasStarted ||= true;
         },
 
         SetUpInitialGame: (state: GameboardSliceType, action: PayloadAction<PlaySliceType>): void => {
@@ -282,6 +284,15 @@ export const GameboardSlice = createSlice({
             }
         },
 
+        QuitGame: (state: GameboardSliceType): void => {
+            state.gameHasStarted = false;
+            GameboardSlice.caseReducers.ResetGameboard(state);
+        },
+
+        Resign: (state: GameboardSliceType): void => {
+            state.signals.draw = { drawType: DrawType.ByAgreement };
+        },
+
         _ResetMovableCells: (state: GameboardSliceType): void => {
             state.cells.flat()
                 .forEach(cell => cell.state = IsCellStateMovable(cell.state) ? null : cell.state);
@@ -308,9 +319,7 @@ export const GameboardSlice = createSlice({
                 },
             });
 
-            if (validMovementCount == 0) {
-                state.signals.illegalMovement = {};
-            }
+            if (validMovementCount == 0) { state.signals.illegalMovement = {}; }
         },
 
         _UpdateKingTerritoryCells: (state: GameboardSliceType, action: PayloadAction<_UpdateKingTerritoryCellsActionType>): void => {
@@ -626,7 +635,9 @@ export const SelectGameboardSlice = (state: typeof Store): GameboardSliceType =>
 export const GameboardSliceReducer = GameboardSlice.reducer;
 
 export const {
+    Resign,
     SetPiece,
+    QuitGame,
     MovePiece,
     AddStateToCell,
     ResetGameboard,

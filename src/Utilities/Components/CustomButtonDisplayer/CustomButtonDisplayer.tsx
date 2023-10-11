@@ -8,14 +8,16 @@ import "./CustomButtonDisplayer.scss";
 type CustomButtonDisplayerProps = {
 
 } & Either<{
-    displayType?: "flex";
+    display?: "flex";
     flexDirection?: "row" | "column";
 }, {
-    displayType: "grid";
-    columnCount: number;
+    display: "grid";
+    columnCount?: number;
 }> & ComponentProps;
 
 export default function CustomButtonDisplayer(props: CustomButtonDisplayerProps): React.ReactElement {
+    const CHILDREN_COUNT: number = props.children.toString().split(",").length;
+
     return (
         <div
             id={props.id}
@@ -24,13 +26,14 @@ export default function CustomButtonDisplayer(props: CustomButtonDisplayerProps)
                 props.className,
             ].toClassName()}
 
+            data-display={props.display ?? "flex"}
+            data-flex-direction={props.flexDirection ?? "row"}
+
             style={{
-                display: props.displayType ?? "flex",
-                flexDirection: props.flexDirection ?? "row",
-                gridTemplateColumns: `repeat(${Math.max(props.columnCount, 1)}, 1fr)`,
+                gridTemplateColumns: `repeat(${Math.min(Math.max(1, props.columnCount ?? CHILDREN_COUNT), CHILDREN_COUNT)}, 1fr)`,
             }}
-        >
-            {props.children}
-        </div>
+
+            children={props.children}
+        />
     );
 }

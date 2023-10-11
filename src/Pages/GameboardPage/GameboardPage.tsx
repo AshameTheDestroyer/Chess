@@ -1,18 +1,21 @@
 import { createPortal } from "react-dom";
+import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import React, { useEffect, useRef, useState } from "react";
 
 import Cell from "../../Types/Cell";
-import DrawType from "../../Types/DrawType";
 import useSignal from "../../Utilities/Hooks/useSignal";
+import Modal from "../../Utilities/Components/Modal/Modal";
 import ColouredPiece, { PieceColour } from "../../Types/Piece";
 import { CHESS_PIECE_COUNT } from "../../Functions/GenerateEmptyGameboard";
 import AudioManager from "../../Utilities/Managers/AudioManager/AudioManager";
+import CustomButton from "../../Utilities/Components/CustomButton/CustomButton";
 import PromotionPickerModal from "../../Modals/PromotionPickerModal/PromotionPickerModal";
 import RepetitionCounterValues from "../../Store/Features/PlaySlice/RepetitionCounterValues";
 import { SelectPreferenceSlice } from "../../Store/Features/PreferenceSlice/PreferenceSlice";
 import ChessCoordinates, { CoordinatesToChessCoordinates } from "../../Types/ChessCoordinates";
 import ChessMovementRecorder from "../../Components/ChessMovementRecorder/ChessMovementRecorder";
+import CustomButtonDisplayer from "../../Utilities/Components/CustomButtonDisplayer/CustomButtonDisplayer";
 import FiftyRuleMovementCounterValues from "../../Store/Features/PlaySlice/FiftyRuleMovementCounterValues";
 import CellState, { DoCellStatesIntersect, GetMostImportantCellState, IsCellStateMovable } from "../../Types/CellState";
 
@@ -23,9 +26,10 @@ import Coordinates, {
 } from "../../Utilities/Types/Coordinates";
 
 import {
+    Resign,
+    QuitGame,
     MovePiece,
     AddStateToCell,
-    ResetGameboard,
     SetUpInitialGame,
     SelectGameboardSlice,
     RemoveStateFromSingularCell,
@@ -35,11 +39,13 @@ import "./GameboardPage.scss";
 
 import GAME_AUDIOS from "../../Constants/GameAudios";
 import PIECE_IMAGES from "../../Constants/PieceImages";
+import ComponentProps from "../../Utilities/Types/ComponentProps";
 
 export default function GameboardPage(): React.ReactElement {
     const GameboardSlice = useSelector(SelectGameboardSlice);
     const PreferenceSlice = useSelector(SelectPreferenceSlice);
     const Dispatch = useDispatch();
+    const Navigate = useNavigate();
 
     const searchParams = new URLSearchParams(location.search);
 
@@ -50,22 +56,25 @@ export default function GameboardPage(): React.ReactElement {
 
     const gameboardPageElementRef = useRef<HTMLDivElement>(null);
 
-    useEffect(() => {
-        gameboardPageElementRef.current?.addEventListener("mousedown", () =>
-            AudioManager.Play(GAME_AUDIOS.game_start), { once: true });
+    const [notificationMessage, setNotificationMessage] = useState<string>(null);
 
-        Dispatch(SetUpInitialGame({
-            binaries: {
-                whitePlaysFirst: searchParams.get("white-plays-first") != null,
-            },
-            handlers: {
-                repetitionCounterValue: +searchParams.get("repetition-counter-value") as RepetitionCounterValues,
-                fiftyRuleMovementCounterValue: +searchParams.get("fifty-rule-movement-counter-value") as FiftyRuleMovementCounterValues,
-            },
-        }));
+    useEffect(() => {
+        if (!GameboardSlice.gameHasStarted) {
+            gameboardPageElementRef.current?.addEventListener("mousedown", () =>
+                AudioManager.Play(GAME_AUDIOS.game_start), { once: true });
+
+            Dispatch(SetUpInitialGame({
+                binaries: {},
+                handlers: {
+                    firstPlayer: searchParams.get("first-player") as PieceColour,
+                    repetitionCounterValue: +searchParams.get("repetition-counter-value") as RepetitionCounterValues,
+                    fiftyRuleMovementCounterValue: +searchParams.get("fifty-rule-movement-counter-value") as FiftyRuleMovementCounterValues,
+                },
+            }));
+        }
 
         return () => {
-            Dispatch(ResetGameboard());
+            Object.values(GAME_AUDIOS).forEach(source => AudioManager.Dispose(source));
         };
     }, []);
 
@@ -91,24 +100,33 @@ export default function GameboardPage(): React.ReactElement {
     }, [GameboardSlice.signals.check]);
 
     useSignal(() => {
-        const kingPieceColour: PieceColour = GameboardSlice.signals.checkmate.kingPieceColour;
-
         AudioManager.Play(GAME_AUDIOS.checkmate);
-        alert(`${kingPieceColour[0].toUpperCase() + kingPieceColour.slice(1)} has been checkmated.`);
+        setNotificationMessage(`${GameboardSlice.signals.checkmate.kingPieceColour.toTitleCase()} has been checkmated.`);
     }, [GameboardSlice.signals.checkmate]);
 
     useSignal(() => {
-        const drawType: DrawType = GameboardSlice.signals.draw.drawType;
-
         AudioManager.Play(GAME_AUDIOS.stalemate);
-        alert(`Players have got a draw by ${drawType}.`);
+        setNotificationMessage(`Players have got a draw by ${GameboardSlice.signals.draw.drawType}.`);
     }, [GameboardSlice.signals.draw]);
 
+    function OnRematch(_e: React.MouseEvent<HTMLElement>): void {
+        Dispatch(QuitGame());
+        Navigate("/Play");
+    }
+
+    function OnResign(_e: React.MouseEvent<HTMLElement>): void {
+        setNotificationMessage("Your foe offers a draw, do you agree?");
+    }
+
+    function OnQuit(_e: React.MouseEvent<HTMLElement>): void {
+        Dispatch(QuitGame());
+        Navigate("/");
+    }
     return (
         <main
             id="gameboard-body"
             className={[
-                (PreferenceSlice.options.alterPieceColours) && "alter-piece-colours",
+                (PreferenceSlice.binaries.alterPieceColours) && "alter-piece-colours",
             ].toClassName()}
             ref={gameboardPageElementRef}
 
@@ -127,12 +145,40 @@ export default function GameboardPage(): React.ReactElement {
                 setReadyToPromoteCell={setReadyToPromoteCell}
             />
 
-            <InformationSection />
+            <InformationSection
+                OnQuit={OnQuit}
+                OnResign={OnResign}
+                OnRematch={OnRematch}
+            />
 
             <DraggedPieceElement
                 draggedPiece={draggedCell?.colouredPiece}
                 draggedPieceImageElementRef={draggedPieceImageElementRef}
             />
+
+            <NotificationMessageModal
+                heading={
+                    (GameboardSlice.signals.checkmate != null) ? "Checkmate" :
+                        (GameboardSlice.signals.draw != null) ? "Draw" :
+                            "Resigning"
+                }
+                message={notificationMessage}
+                setMessage={setNotificationMessage}
+            >
+                <CustomButtonDisplayer> {
+                    (GameboardSlice.signals.checkmate != null || GameboardSlice.signals.draw != null) ? (
+                        <>
+                            <CustomButton text="Quit" events={{ onClick: OnQuit }} />
+                            <CustomButton isEmphasized text="Rematch" events={{ onClick: OnRematch }} />
+                        </>
+                    ) : (
+                        <>
+                            <CustomButton text="Agree" events={{ onClick: _e => Dispatch(Resign()) }} />
+                            <CustomButton isEmphasized text="Refuse" events={{ onClick: _e => setNotificationMessage(null) }} />
+                        </>
+                    )
+                } </CustomButtonDisplayer>
+            </NotificationMessageModal>
         </main>
     );
 }
@@ -380,9 +426,9 @@ function GameboardElement(props: GameboardElementProps): React.ReactElement {
         <section
             id="gameboard"
             className={[
-                (!PreferenceSlice.options.showHintMovements) && "gameboard-without-hint-movements",
-                (!PreferenceSlice.options.showPlayedMovements) && "gameboard-without-played-movements",
-                (searchParams.get("white-plays-first") == null) && "gameboard-rotated",
+                (!PreferenceSlice.binaries.showHintMovements) && "gameboard-without-hint-movements",
+                (!PreferenceSlice.binaries.showPlayedMovements) && "gameboard-without-played-movements",
+                (searchParams.get("first-player") == PieceColour.black) && "gameboard-rotated",
             ].toClassName()}
 
             onClick={OnGameboardClick}
@@ -490,10 +536,45 @@ function DraggedPieceElement(props: DraggedPieceElementProps): React.ReactElemen
             }), document.body);
 }
 
-function InformationSection(): React.ReactElement {
+type InformationSectionProps = {
+    OnQuit: React.MouseEventHandler<HTMLButtonElement>;
+    OnResign: React.MouseEventHandler<HTMLButtonElement>;
+    OnRematch: React.MouseEventHandler<HTMLButtonElement>;
+};
+
+function InformationSection(props: InformationSectionProps): React.ReactElement {
+
     return (
         <section id="information-section">
             <ChessMovementRecorder />
+
+            <CustomButtonDisplayer display="grid">
+                <CustomButton text="Quit" events={{ onClick: props.OnQuit }} />
+                <CustomButton text="Resign" events={{ onClick: props.OnResign }} />
+                <CustomButton text="Rematch" events={{ onClick: props.OnRematch }} />
+            </CustomButtonDisplayer>
         </section>
+    );
+}
+
+type NotificationMessageModalProps = {
+    message: string;
+    heading: string;
+    setMessage: React.Dispatch<string>;
+} & Pick<ComponentProps, "children">;
+
+function NotificationMessageModal(props: NotificationMessageModalProps): React.ReactElement {
+    return (
+        <Modal
+            id="notification-message-modal"
+
+            preventOutsideClosing
+            isOpen={props.message != null}
+            setIsOpen={value => (!value) && props.setMessage(null)}
+        >
+            <h1 className="big-header">{props.heading}</h1>
+            <p>{props.message}</p>
+            {props.children}
+        </Modal>
     );
 }

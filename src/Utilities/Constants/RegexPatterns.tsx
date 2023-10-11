@@ -47,10 +47,10 @@ const
 
 
 const REGEX_PATTERNS = {
-    username: USERNAME_REGEX_PATTERN,
     mail: MAIL_REGEX_PATTERN,
-    usernameOrMail: USERNAME_OR_MAIL_REGEX_PATTERN,
     password: PASSWORD_REGEX_PATTERN,
+    username: USERNAME_REGEX_PATTERN,
+    usernameOrMail: USERNAME_OR_MAIL_REGEX_PATTERN,
 };
 
 export default REGEX_PATTERNS;

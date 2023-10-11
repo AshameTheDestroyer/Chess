@@ -16,7 +16,6 @@
 
     padding: calc($padding - $border-bottom-thickness);
 
-    background-color: var(--half-transparent);
     background-color: var(--background-darker-colour);
 
     border-bottom: var(--background-colour) $border-bottom-thickness solid;
@@ -68,6 +67,13 @@
 
             @include index.text-shadow($thickness: var(--font-border-thickness), $colour: var(--background-darker-colour));
         }
+    }
+}
+
+[data-theme=light] #main-header {
+
+    #logo img {
+        filter: invert(1);
     }
 }
 

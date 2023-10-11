@@ -2,26 +2,36 @@ import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 
 import { Store } from "../../Store";
 import ChessTheme from "../../../Types/ChessTheme";
+import Theme from "../../../Utilities/Types/Theme";
 import CHESS_THEMES from "../../../Constants/ChessThemes";
+import GetCurrentTheme from "../../../Utilities/Functions/GetCurrentTheme";
 import { GetFromLocalStorage, SetInLocalStorage } from "../../../Utilities/Functions/HandleLocalStorage";
 
-type PreferenceSliceType = {
-    chessTheme: ChessTheme;
-    options: PreferenceOptions;
-};
-
-export type PreferenceOptions = {
+export type PreferenceBinaries = {
     showHintMovements: boolean;
     alterPieceColours: boolean;
     showPlayedMovements: boolean;
 };
 
+export type PreferenceHandlers = {
+    theme: Theme;
+};
+
+type PreferenceSliceType = {
+    chessTheme: ChessTheme;
+    binaries: PreferenceBinaries;
+    handlers: PreferenceHandlers;
+};
+
 const INITIAL_STATE: PreferenceSliceType = {
     chessTheme: GetFromLocalStorage("preference-chess-theme") ?? CHESS_THEMES[0],
-    options: GetFromLocalStorage("preference-options") ?? {
+    binaries: GetFromLocalStorage("preference-binaries") ?? {
         showHintMovements: true,
         alterPieceColours: false,
         showPlayedMovements: true,
+    },
+    handlers: GetFromLocalStorage("preference-handlers") ?? {
+        theme: GetCurrentTheme(),
     },
 };
 
@@ -35,9 +45,14 @@ export const PreferenceSlice = createSlice({
             SetInLocalStorage("preference-chess-theme", action.payload);
         },
 
-        SetOptions: (state: PreferenceSliceType, action: PayloadAction<PreferenceOptions>): void => {
-            state.options = action.payload;
-            SetInLocalStorage("preference-options", action.payload);
+        SetBinaries: (state: PreferenceSliceType, action: PayloadAction<PreferenceBinaries>): void => {
+            state.binaries = action.payload;
+            SetInLocalStorage("preference-binaries", action.payload);
+        },
+
+        SetHandlers: (state: PreferenceSliceType, action: PayloadAction<PreferenceHandlers>): void => {
+            state.handlers = action.payload;
+            SetInLocalStorage("preference-handlers", action.payload);
         },
     },
 });
@@ -48,6 +63,7 @@ export const SelectPreferenceSlice = (state: typeof Store): PreferenceSliceType 
 export const PreferenceSliceReducer = PreferenceSlice.reducer;
 
 export const {
-    SetOptions,
+    SetBinaries,
+    SetHandlers,
     SetChessTheme,
 } = PreferenceSlice.actions;

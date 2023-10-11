@@ -94,3 +94,9 @@ Today we're not making any tedious Chess Game, no baby today we're making A WHOL
 3. So instead, I went with a pattern, that I'm not sure that it exists actually, but I'd simply called it as the Signal Pattern, but I'm pretty confident with the implementation so far, due to its simplicity.
 4. I've also added a Custom Hook for it, called useSignal, hehe.
 5. Fixed some logical and UI bugs, hoping for the best.
+
+### Theme Context:
+1. As the name suggests, I've successfully added a theme context to the website, now you can choose either dark, light, or system default theme, and the latter one will adapt to the device preferences.
+2. Added modals and popups all over the place.
+3. A cool background is introduced too, with lazy loading being injected.
+4. Lots of bugs fixed.

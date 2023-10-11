@@ -15,7 +15,7 @@ $cell-state-colours: #ffd700, #ffd700, #0044ff, #f31818, #10f568, #9b0ba8, #9b0b
 
     display: flex;
     flex-direction: column;
-    gap: calc(var(--padding) * 2);
+    gap: var(--padding);
 
     padding: var(--padding);
 
@@ -188,6 +188,7 @@ $cell-state-colours: #ffd700, #ffd700, #0044ff, #f31818, #10f568, #9b0ba8, #9b0b
         flex-direction: column;
         place-content: space-between start;
         place-items: space-between start;
+        gap: 2rem;
     }
 }
 
@@ -224,6 +225,17 @@ svg.piece {
         fill: var(--dark-colour);
         stroke: var(--light-colour);
     }
+}
+
+#notification-message-modal {
+    padding: 2rem;
+
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+
+    background-color: var(--background-darker-colour);
+    border: 0.2rem solid var(--background-colour);
 }
 
 @media (min-width: index.$second-screen-width) {
@@ -285,16 +297,13 @@ svg.piece {
     #gameboard-body {
         flex-direction: row;
         flex-wrap: wrap;
-        place-content: space-between;
-        place-items: space-between;
+        place-content: start center;
+        place-items: start center;
 
         #information-section {
+            min-width: 40vw;
+            max-width: 50vw;
             max-height: calc(100vh - var(--header-height) - var(--padding) * 2);
-
-            // ENHANCE: When adding new things to the information section, remove this.
-            #chess-movement-recorder {
-                width: 50%;
-            }
         }
     }
 }
