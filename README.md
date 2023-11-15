@@ -1,9 +1,7 @@
 # Chess
-
-Today we're not making any tedious Chess Game, no baby today we're making A WHOLE FUCKING CHESS ENGINE, and I'm serious about it, it will be my best project so far, and even for future projects it may top most of them…
+Today we're boutta make a Chess Game!
 
 ### First Commit, Piece Movements:
-
 1. Simple page navigation on the header.
 2. Gameboard Page, where the board is presented to be played on.
 3. Pieces can move via three main ways:
@@ -17,7 +15,6 @@ Today we're not making any tedious Chess Game, no baby today we're making A WHOL
     - Played-To: indicates the last played piece's new cell.
 
 ### Context Menu:
-
 1. As the name suggests, I've added a context menu, with dummy buttons for now, and it's built separately from the project, to work in every other project, and it contains the following features:
     - Groups: the ability to group certain buttons together to appear separately.
     - Tab Groups: the ability to hide certain groups in other tabs, to be accessible by tab buttons.
@@ -27,7 +24,6 @@ Today we're not making any tedious Chess Game, no baby today we're making A WHOL
 3. Minor bug fixes.
 
 ### Home Page:
-
 1. This one was simple, I created a basic homepage, with some Context Menu bug fixes, and then threw a bunch of SASS on it.
 2. I've made a Custom Button component, as well as a Custom Button Displayer, and I've given them a poppy cartoony-ish style, which in my opinion, looks amazing.
 3. Custom Buttons implement:
@@ -41,7 +37,6 @@ Today we're not making any tedious Chess Game, no baby today we're making A WHOL
     - Gridding: displays buttons in Grid Mode.
 
 ### Piece Movement System:
-
 1. Now, pieces can no longer move freely, and instead are tied to a system that ensures regular chess piece movements.
 2. All of the following moves were added, (which are BTW also cell states):
     - Move: a literal move, nothing more.
@@ -52,7 +47,6 @@ Today we're not making any tedious Chess Game, no baby today we're making A WHOL
 3. Promotion Picker Modal, which's a modal that appears whenever a pawn's boutta promote, and it has a perfect visual effect to it.
 
 ### Theme Picker:
-
 1. Simply put: now there's a Preference Page, that you can navigate to throughout the navigation bar within the page-shared header.
 2. The Preference Page only contains Chess Theme to pick from at the meantime, which contains the following themes:
     - Classic.
@@ -74,7 +68,6 @@ Today we're not making any tedious Chess Game, no baby today we're making A WHOL
 5. Options menu added too to the Preference Page, which currently only contains one button, that can either enable or disable the movements shown whenever a piece is selected/moved.
 
 ### Checkmating:
-
 1. As the name simply suggests, we can now, check, checkmate, or draw, our opponents, and it was so damn hard to implement.
 2. Kings now check for threatening foe pieces, whenever a piece is moved, then be checked if they're actually at the fire line.
 3. A piece can no longer move when a check occurrence exists, unless they can benefit their king.
@@ -85,7 +78,6 @@ Today we're not making any tedious Chess Game, no baby today we're making A WHOL
 8. Renamed the Sneak Movement into an En Passant Movement.
 
 ### Stalemating:
-
 1. Finally, the game's literally complete, but not as much can be said to the whole website, nor engine.
 2. All of kind of draws are now possible and fully functional.
 3. Whenever a player runs outta available movements, a stalemate is thrown.
@@ -96,7 +88,6 @@ Today we're not making any tedious Chess Game, no baby today we're making A WHOL
 8. A form to register all the playing states before actually start playing.
 
 ### Audio Manager:
-
 1. Although it's been there for awhile now, it's never been implemented properly until yet.
 2. Firstly, I've tried to use an Event-Driven Pattern, something like Subscription Pattern, but it just won't work because Redux, apparently, can't store functions, due to their lack of serializability.
 3. So instead, I went with a pattern, that I'm not sure that it exists actually, but I'd simply called it as the Signal Pattern, but I'm pretty confident with the implementation so far, due to its simplicity.
@@ -104,12 +95,10 @@ Today we're not making any tedious Chess Game, no baby today we're making A WHOL
 5. Fixed some logical and UI bugs, hoping for the best.
 
 ### Theme Context:
-
 1. As the name suggests, I've successfully added a theme context to the website, now you can choose either dark, light, or system default theme, and the latter one will adapt to the device preferences.
 2. Added modals and popups all over the place.
 3. A cool background is introduced too, with lazy loading being injected.
 4. Lots of bugs fixed.
 
 ### Project's Rest:
-
 I'm giving this project a rest, it's good as it is for now, and I'm renaming it just Chess, forget about the Engine part, because that'll be, unfortunately, for future.
